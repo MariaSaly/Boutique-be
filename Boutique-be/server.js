@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
+const itemRoutes = require('./src/routes/itemRoutes');
 const app = express();
 
 dotenv.config();
@@ -11,7 +12,8 @@ app.use(express.json())
 
 //Routes
 
-app.use('/api/auth',authRoutes)
+app.use('/api/auth',authRoutes);
+app.use('/api/items', itemRoutes);
 
 //start server 
 
