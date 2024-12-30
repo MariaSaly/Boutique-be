@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 
-const upload = multer({ dest: 'uploads/'})
+// const upload = multer({ dest: 'uploads/'})
 
 // Function to save file locally
 const saveFileLocally = (fileBuffer, fileName) => {
