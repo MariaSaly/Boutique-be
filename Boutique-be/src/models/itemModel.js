@@ -1,19 +1,45 @@
 const admin = require('firebase-admin');
 const db = admin.firestore();
 const itemsCollections = db.collection("items");
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
+
+const upload = multer({ dest: 'uploads/'})
+
+// Function to save file locally
+const saveFileLocally = (fileBuffer, fileName) => {
+    const filePath = path.join(__dirname, "uploads", fileName);
+    
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(path.dirname(filePath))) {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    }
+
+    // Write the buffer to the local file system
+    fs.writeFileSync(filePath, fileBuffer);
+
+    return filePath; // Return the file path
+};
 
 class item{
 
 
     static async create (itemData){
-        const {name,price,description,imageUrl} = itemData;
+        const {name,price,description ,imageUrl} = itemData;
+        
         const newItem = {
             name,
             price,
             description,
             imageUrl,
+           
             createdAt:admin.firestore.FieldValue.serverTimestamp(),
         };
+        
+        
+
+        
         const docRef = await itemsCollections.add(newItem);
         return { id :docRef.id,...newItem}
     }

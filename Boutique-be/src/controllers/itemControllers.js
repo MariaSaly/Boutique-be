@@ -4,7 +4,22 @@ const item = require("../models/itemModel");
 
 exports.createItem = async (req,res) => {
     try{
-       const newItem = await item.create(req.body);
+       const {name,price,description} = req.body;
+       let imageUrl = null;
+       if(req.file){
+        imageUrl = `/uploads/${req.file.filename}`;
+        console.log("iamgeUrl:", imageUrl)
+       }
+        
+      
+       const itemData = {
+        name,
+        price,
+        description,
+        imageUrl,
+    };
+       // Create item using the ItemModel (handling both file and other properties)
+       const newItem = await item.create(itemData);
        res.status(201).send(newItem);
     }
     catch(err){
