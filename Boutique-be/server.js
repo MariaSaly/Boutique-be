@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
 const itemRoutes = require('./src/routes/itemRoutes');
+const orderRoutes = require('./src/routes/orderRoutes')
 const path = require("path");
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json())
 
 app.use('/api/auth',authRoutes);
 app.use('/api/items', itemRoutes);
+app.use('/api/orders',orderRoutes);
 
 //start server 
 
