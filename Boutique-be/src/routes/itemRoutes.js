@@ -24,7 +24,7 @@ const upload = multer({ storage: storage });
 
 //define routes
 
-router.post('/createItem',upload.single("image"), itemControllers.createItem);
+router.post('/createItem',upload.single("image"),authenticateUser, itemControllers.createItem);
 router.get('/getItem', itemControllers.getAllItem);
 router.put('/updateItem/:id',itemControllers.updateItem);
 router.delete('/deleteItem/:id', itemControllers.deleteItem);

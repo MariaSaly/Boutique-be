@@ -7,10 +7,20 @@ const db = admin.firestore();
 
 exports.createOrder = async (req, res) => {
     try {
-        const { cartItems, userId } = req.body;
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(410).json({ message: "Authorization token required" });
+        }
+   
+        console.log("token:",token);
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        console.log("decodedToken:",decodedToken);
+        const userId = decodedToken.uid;
+        console.log("userId:",userId);
+        const { cartItems } = req.body;
 
         // Validate cartItems and userId
-        if (!cartItems || !userId) {
+        if (!cartItems) {
             return res.status(400).send({ message: 'Missing required details' });
         }
 
@@ -58,7 +68,15 @@ exports.createOrder = async (req, res) => {
 
 exports.getOrdersByUserId = async (req,res) => {
     try{
-       const userId = req.params.id;
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(410).json({ message: "Authorization token required" });
+        }
+   
+        console.log("token:",token);
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        console.log("decodedToken:",decodedToken);
+        const userId = decodedToken.uid;
        const orders = await order.getOrderByUserId(userId);
        res.status(200).send(orders);
     }
