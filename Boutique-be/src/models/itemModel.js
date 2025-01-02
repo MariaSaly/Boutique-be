@@ -26,13 +26,17 @@ class item{
 
 
     static async create (itemData){
-        const {name,price,description ,imageUrl} = itemData;
+        const {name,price,description ,imageUrl,category,isCustomizable} = itemData;
         
         const newItem = {
             name,
             price,
             description,
             imageUrl,
+            category,
+            
+            isCustomizable,
+           
            
             createdAt:admin.firestore.FieldValue.serverTimestamp(),
         };
@@ -44,8 +48,15 @@ class item{
         return { id :docRef.id,...newItem}
     }
 
-    static async getAll(){
-        const snapshot = await itemsCollections.get();
+    static async getAll( filter = { }){
+        let query = itemsCollections;
+        if(filter.category){
+            query = query.where("category","==",filter.category);
+        }
+        if(filter.isCustomizable){
+            query = query.where("isCustomizable","==",filter.isCustomizable)
+        }
+        const snapshot = await query.get();
         return snapshot.docs.map( (doc)=> ({
             id:doc.id,
             ...doc.data(),

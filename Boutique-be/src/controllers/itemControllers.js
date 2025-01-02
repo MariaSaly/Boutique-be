@@ -4,7 +4,7 @@ const item = require("../models/itemModel");
 
 exports.createItem = async (req,res) => {
     try{
-       const {name,price,description} = req.body;
+       const {name,price,description,category,isCustomizable} = req.body;
        let imageUrl = null;
        if(req.file){
         imageUrl = `/uploads/${req.file.filename}`;
@@ -17,6 +17,9 @@ exports.createItem = async (req,res) => {
         price,
         description,
         imageUrl,
+        category,
+        isCustomizable
+
     };
        // Create item using the ItemModel (handling both file and other properties)
        const newItem = await item.create(itemData);
@@ -30,7 +33,16 @@ exports.createItem = async (req,res) => {
 
  exports.getAllItem = async (req,res) => {
     try{
-     const items = await item.getAll();
+    const  { category,isCustomizable} = req.query;
+    const filter = {};
+    if(category){
+        filter.category = category;
+    }
+    if(isCustomizable !== undefined){
+        filter.isCustomizable = isCustomizable === 'true' ;
+    }
+    console.log("filter:",filter);
+     const items = await item.getAll(filter);
      res.status(200).send(items)
     }
     catch(err){
