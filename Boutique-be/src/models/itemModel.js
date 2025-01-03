@@ -26,7 +26,7 @@ class item{
 
 
     static async create (itemData){
-        const {name,price,description ,imageUrl,category,isCustomizable} = itemData;
+        const {name,price,description ,imageUrl,category,isCustomizable,stock} = itemData;
         
         const newItem = {
             name,
@@ -34,7 +34,7 @@ class item{
             description,
             imageUrl,
             category,
-            
+            stock,            
             isCustomizable,
            
            
