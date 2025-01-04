@@ -64,7 +64,7 @@ class item{
     }
 
     static async getById(id) {
-        const itemRef = itemsCollection.doc(id);
+        const itemRef = itemsCollections.doc(id);
         const doc = await itemRef.get();
         
         if (!doc.exists) {

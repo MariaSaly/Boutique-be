@@ -5,13 +5,21 @@ const itemRoutes = require('./src/routes/itemRoutes');
 const orderRoutes = require('./src/routes/orderRoutes')
 const path = require("path");
 const app = express();
+const cors = require('cors');
 
 dotenv.config();
 
+//Enable cors
+app.use(cors({
+    origin: 'http://localhost:4200',  // Allow only your frontend origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific methods
+    allowedHeaders: ['Content-Type', 'Authorization'] // Allow specific headers
+  }));
+
 //middleware
 
-// Middleware to serve static files from 'uploads' folder
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'src', 'uploads')));
+
 
 app.use(express.json())
 

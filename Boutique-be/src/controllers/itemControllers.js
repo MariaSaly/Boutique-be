@@ -50,6 +50,16 @@ exports.createItem = async (req,res) => {
         res.status(500).send({ error:`Failed to get all items:${err}`});
     }
  }
+ exports.getById = async (req,res) => {
+    const {id} = req.params;
+    try{
+     const result = await item.getById(id);
+     res.status(200).send(result)
+    }
+    catch(error){
+        res.status(500).send({ error: `Failed to get itemById:${error}`});
+    }
+ }
 //update an item
  exports.updateItem = async (req,res) => {
     const {id}= req.params;

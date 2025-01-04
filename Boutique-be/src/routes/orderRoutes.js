@@ -16,6 +16,8 @@ router.post('/createOrders',authenticateUser,orderControllers.createOrder);
 
 router.get('/orderByUserId', orderControllers.getOrdersByUserId);
 
+
+
 //Route to get orderbyuserId
 
 router.patch('/updateOrderStatus/:id', orderControllers.updateOrderStatus);
