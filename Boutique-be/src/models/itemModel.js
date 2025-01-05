@@ -36,6 +36,7 @@ class item{
             category,
             stock,            
             isCustomizable,
+            deletedAt:null,
            
            
             createdAt:admin.firestore.FieldValue.serverTimestamp(),
@@ -48,20 +49,34 @@ class item{
         return { id :docRef.id,...newItem}
     }
 
-    static async getAll( filter = { }){
+    static async getAll(filter = {}) {
         let query = itemsCollections;
-        if(filter.category){
-            query = query.where("category","==",filter.category);
+    
+
+        
+        // Filter by category if provided
+        if (filter.category) {
+            query = query.where("category", "==", filter.category);
         }
-        if(filter.isCustomizable){
-            query = query.where("isCustomizable","==",filter.isCustomizable)
+    
+        // Filter by isCustomizable if provided
+        if (filter.isCustomizable) {
+            query = query.where("isCustomizable", "==", filter.isCustomizable);
         }
+    
+        // Ensure the query includes documents with the 'deletedAt' field
+        query = query.where("deletedAt", "==", null); // Include items where deletedAt is null or undefined
+    
+        // Get the snapshot of the filtered query
         const snapshot = await query.get();
-        return snapshot.docs.map( (doc)=> ({
-            id:doc.id,
+    
+        // Map the query result to include the document ID and the data
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
             ...doc.data(),
-        }))
+        }));
     }
+    
 
     static async getById(id) {
         const itemRef = itemsCollections.doc(id);
@@ -84,13 +99,19 @@ class item{
       }
 
     static async update(id,itemData){
-        const {name,price,description,imageUrl} = itemData;
+        const {name,price,description,imageUrl,category,
+            stock,            
+            isCustomizable} = itemData;
+            console.log("itemData:",itemData);
         const itemRef = itemsCollections.doc(id);
         await itemRef.update({
             name,
             description,
             price,
             imageUrl,
+            category,
+            stock,
+            isCustomizable,
             updatedAt:admin.firestore.FieldValue.serverTimestamp()
         });
         return { message: "Items updated sucessfully"};

@@ -12,7 +12,7 @@ dotenv.config();
 //Enable cors
 app.use(cors({
     origin: 'http://localhost:4200',  // Allow only your frontend origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific methods
+    methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // Allow specific methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allow specific headers
   }));
 
