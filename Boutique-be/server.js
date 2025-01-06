@@ -2,12 +2,15 @@ const express = require('express');
 const dotenv = require('dotenv');
 const authRoutes = require('./src/routes/authRoutes');
 const itemRoutes = require('./src/routes/itemRoutes');
-const orderRoutes = require('./src/routes/orderRoutes')
+const orderRoutes = require('./src/routes/orderRoutes');
+const listUserRoute = require('./src/routes/listUsersRoute')
 const path = require("path");
 const app = express();
 const cors = require('cors');
 
 dotenv.config();
+
+
 
 //Enable cors
 app.use(cors({
@@ -28,6 +31,7 @@ app.use(express.json())
 app.use('/api/auth',authRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/orders',orderRoutes);
+app.use('/api',listUserRoute);
 
 //start server 
 
