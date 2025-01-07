@@ -26,4 +26,6 @@ if (!token) {
         });
     }
 }
+
+
 module.exports = authenticateUser;
