@@ -27,6 +27,7 @@ exports.getCart = async (req, res) => {
                 console.log("product:", product);
                 return {
                     ...product,
+                    productId:item.productId,
                     quantity: item.quantity,
                     cartId: item.cartId // Include cart ID for reference
                 };
@@ -142,7 +143,7 @@ exports.updateCartItems = async (req, res) => {
 
 exports.deleteCart = async(req,res) => {
     try{
-        const { userId, productId } = req.body;
+        const { userId, productId } = req.params;
         await cartModel.deleteCartItems(userId, productId);
         res.status(200).json({ message: 'Item removed from cart' });
     }

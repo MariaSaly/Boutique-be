@@ -89,8 +89,26 @@ const cart = {
         console.error('Error deleting product from cart:', error);
         throw new Error('Failed to delete product from cart');
     }
-}
+},
+async updateCart(userId, cartItems) {
+    try {
+        // Validate userId and cartItems before proceeding
+        if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+            throw new Error("Invalid userId passed to updateCart");
+        }
+        console.log('Updating cart for userId:', userId);
+        console.log('Cart Items:', cartItems);
 
+        // Ensure the cart document is updated with correct userId and items
+        const cartRef = db.collection(CART_COLLECTION).doc(userId);  // Use userId directly to reference the document
+        await cartRef.set({ userId, items: cartItems });
+
+        console.log('Cart updated successfully');
+    } catch (error) {
+        console.error('Error updating cart:', error);
+        throw new Error('Failed to update cart');
+    }
+  }
 ,
   async createCart(userId, newCartItems) {
     try {
