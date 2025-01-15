@@ -5,6 +5,7 @@ const itemRoutes = require('./src/routes/itemRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const listUserRoute = require('./src/routes/listUsersRoute');
 const CartRoutes = require('./src/routes/cartRoutes');
+const paymentRoutes = require('./src/routes/paymentRoutes')
 const path = require("path");
 const app = express();
 const cors = require('cors');
@@ -33,7 +34,8 @@ app.use('/api/auth',authRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/orders',orderRoutes);
 app.use('/api',listUserRoute);
-app.use('/api/cart',CartRoutes)
+app.use('/api/cart',CartRoutes);
+app.use('/api/payment',paymentRoutes);
 
 //start server 
 
