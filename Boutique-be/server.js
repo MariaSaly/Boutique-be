@@ -5,7 +5,8 @@ const itemRoutes = require('./src/routes/itemRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const listUserRoute = require('./src/routes/listUsersRoute');
 const CartRoutes = require('./src/routes/cartRoutes');
-const paymentRoutes = require('./src/routes/paymentRoutes')
+const paymentRoutes = require('./src/routes/paymentRoutes');
+const userRoutes = require('./src/routes/userRoutes');
 const path = require("path");
 const app = express();
 const cors = require('cors');
@@ -36,6 +37,7 @@ app.use('/api/orders',orderRoutes);
 app.use('/api',listUserRoute);
 app.use('/api/cart',CartRoutes);
 app.use('/api/payment',paymentRoutes);
+app.use('/api/users',userRoutes);
 
 //start server 
 
