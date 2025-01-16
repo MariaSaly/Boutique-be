@@ -6,10 +6,11 @@ const admin = require('firebase-admin');
 exports.createItem = async (req,res) => {
     try{
        const {name,price,description,category,isCustomizable,stock} = req.body;
-       let imageUrl = null;
-       if(req.file){
-        imageUrl = `/uploads/${req.file.filename}`;
-        console.log("iamgeUrl:", imageUrl)
+       let imageUrl = [];
+       if(req.files){
+        imageUrl = req.files.map(file => `/uploads/${file.filename}`);
+        console.log("imageUrls:", imageUrl);
+       
        }
         
       
