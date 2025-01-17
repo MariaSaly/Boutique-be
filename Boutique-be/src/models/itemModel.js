@@ -26,7 +26,7 @@ class item{
 
 
     static async create (itemData){
-        const {name,price,description ,imageUrl,category,isCustomizable,stock} = itemData;
+        const {name,price,description ,imageUrl,category,isCustomizable,stock,vedioLink} = itemData;
         
         const newItem = {
             name,
@@ -37,7 +37,7 @@ class item{
             stock,            
             isCustomizable,
             deletedAt:null,
-           
+            vedioLink,
            
             createdAt:admin.firestore.FieldValue.serverTimestamp(),
         };

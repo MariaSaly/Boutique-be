@@ -5,7 +5,7 @@ const admin = require('firebase-admin');
 
 exports.createItem = async (req,res) => {
     try{
-       const {name,price,description,category,isCustomizable,stock} = req.body;
+       const {name,price,description,category,isCustomizable,stock,vedioLink} = req.body;
        let imageUrl = [];
        if(req.files){
         imageUrl = req.files.map(file => `/uploads/${file.filename}`);
@@ -21,7 +21,8 @@ exports.createItem = async (req,res) => {
         imageUrl,
         category,
         isCustomizable,
-        stock
+        stock,
+        vedioLink
 
     };
        // Create item using the ItemModel (handling both file and other properties)
