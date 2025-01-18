@@ -50,10 +50,15 @@ exports.createOrder = async (req, res) => {
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         };
 
-        // Step 5: Save Order to Database
-        await order.createModel(orderData);
+         // Step 5: Save Order to Database
+         const orderRef = await order.createModel(orderData); // Assuming this is a Firestore collection reference
+         console.log("Write Result:", orderRef);
+ 
+         // Fetch the created order to get the full document data
+         const createdOrderSnapshot = await orderRef.get();
+         const createdOrder = createdOrderSnapshot.data(); // The actual document data
 
-        res.status(201).json({ message: 'Order Created Successfully!', razorpayOrder: razorpayOrder });
+        res.status(201).json({ message: 'Order Created Successfully!',orderId:createdOrderSnapshot.id, razorpayOrderId: razorpayOrder.id });
     } catch (err) {
         console.error("Error Creating Order:", err);
         res.status(500).json({ message: `Internal Server Error: ${err.message}` });

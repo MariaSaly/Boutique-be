@@ -1,5 +1,8 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const admin = require('firebase-admin');
+const db = admin.firestore();
+
 
 //initialize razorpay instance 
 const razorpay = new Razorpay({

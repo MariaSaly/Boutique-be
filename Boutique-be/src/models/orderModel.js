@@ -8,7 +8,8 @@ const orderModel = {
    createModel:async( orderModel)=>{
    
    const orderRef = db.collection(ORDER_COLLECTION).doc();
-   await orderRef.set({ id:orderRef.id,...orderModel});
+    await orderRef.set({ id:orderRef.id,...orderModel});
+   return orderRef;
    },
    getOrderByUserId: async (userId)=>{
     
