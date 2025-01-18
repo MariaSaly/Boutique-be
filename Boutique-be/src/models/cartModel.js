@@ -49,55 +49,60 @@ const cart = {
     }
     ,
 
-    async deleteCartItems(userId, productId) {
+    async deleteCartItems(userId, productId = null) {
         try {
-            // Validate userId and productId before proceeding
+            // Validate userId
             if (!userId || typeof userId !== 'string' || userId.trim() === '') {
                 throw new Error("Invalid userId passed to deleteCartItems");
             }
-            if (!productId || typeof productId !== 'string' || productId.trim() === '') {
-                throw new Error("Invalid productId passed to deleteCartItems");
-            }
-
-            console.log('Deleting product from cart for userId:', userId);
-            console.log('Product ID to delete:', productId);
-
-            // Get the cart by userId
-            const cartRef = db.collection(CART_COLLECTION).doc(userId.trim());  // Use userId directly to reference the document
+    
+            console.log('Deleting product(s) from cart for userId:', userId);
+    
+            // Reference the cart document by userId
+            const cartRef = db.collection(CART_COLLECTION).doc(userId.trim());
             const cartSnapshot = await cartRef.get();
-
+    
             if (!cartSnapshot.exists) {
                 console.log(`No cart found for userId: ${userId}`);
                 return;
             }
-
-            const cart = cartSnapshot.data();
-            console.log("Cart before deletion:", cart);
-
-            // Ensure items is an array
-            const currentItems = Array.isArray(cart.items) ? cart.items : [];
-
-            // Find the item to delete by productId
-            const itemIndex = currentItems.findIndex(item => item.productId === productId);
-            console.log("itemIndex:", itemIndex);
-
-            if (itemIndex === -1) {
-                console.log(`Item with productId ${productId} not found in the cart.`);
-                return;
+    
+            if (productId) {
+                // Validate productId
+                if (typeof productId !== 'string' || productId.trim() === '') {
+                    throw new Error("Invalid productId passed to deleteCartItems");
+                }
+    
+                console.log('Product ID to delete:', productId);
+    
+                // Get the current items array
+                const cart = cartSnapshot.data();
+                const currentItems = Array.isArray(cart.items) ? cart.items : [];
+    
+                // Find and remove the item with the specified productId
+                const itemIndex = currentItems.findIndex(item => item.productId === productId);
+                if (itemIndex === -1) {
+                    console.log(`Item with productId ${productId} not found in the cart.`);
+                    return;
+                }
+    
+                currentItems.splice(itemIndex, 1); // Remove the item
+    
+                // Update the cart with the remaining items
+                await cartRef.update({ items: currentItems });
+                console.log('Cart updated successfully after deletion');
+            } else {
+                // No productId provided: delete the entire cart document
+                await cartRef.delete();
+                console.log(`Cart for userId ${userId} deleted successfully`);
             }
-
-            // Remove the item from the array
-            currentItems.splice(itemIndex, 1);  // Removes the item at the found index
-
-            // Update the cart with the new list of items
-            await cartRef.update({ items: currentItems });
-
-            console.log('Cart updated successfully after product deletion');
         } catch (error) {
-            console.error('Error deleting product from cart:', error);
-            throw new Error('Failed to delete product from cart');
+            console.error('Error deleting product(s) from cart:', error);
+            throw new Error('Failed to delete product(s) from cart');
         }
-    },
+    }
+    
+    ,
     async updateCart(userId, cartItems) {
         try {
             // Validate userId and cartItems before proceeding
