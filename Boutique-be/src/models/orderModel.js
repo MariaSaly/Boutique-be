@@ -1,66 +1,39 @@
-const { error } = require('console');
+
 const admin = require('firebase-admin');
 const db = admin.firestore();
-const itemsCollections = db.collection("order");
 
+const ORDER_COLLECTION = 'orders';
 
-class order{
-    constructor( userId,cartItems,totalPrice,status = "pending"){
-       this.userId = userId;
-       this.cartItems = cartItems;
-       this.totalPrice = totalPrice;
-       this.status = status;
-        this.createdAt=admin.firestore.FieldValue.serverTimestamp()
-    }
-// save the order
-    async save (){
-        try{
-            const orderRef = itemsCollections.doc();
-
-            orderRef.set({
-               userId:this.userId,
-               cartItems:this.cartItems,
-               totalPrice:this.totalPrice,
-               status:this.status,
-               createdAt:this.createdAt
-            });
-            return orderRef.id;
-        }
-        catch(err){
-            console.log(`Error in saving order ${err}`);
-        }
-      
-    }
-    // get the order by userId
-
-  static  async getOrderByUserId(userId){
-    try{
-        const orderSnapShot = await itemsCollections.where('userId' , "==", userId).get();
-    const orders = orderSnapShot.docs.map( doc => ({ id:doc.id, ...doc.data()}));
-    return orders;
-    }
-    catch(err){
-        console.log(`Error in getting order ${err}`);
-    }
+const orderModel = {
+   createModel:async( orderModel)=>{
+   
+   const orderRef = db.collection(ORDER_COLLECTION).doc();
+   await orderRef.set({ id:orderRef.id,...orderModel});
+   },
+   getOrderByUserId: async (userId)=>{
     
-  }
+     const orderSnapShot= await db.collection(ORDER_COLLECTION).where('userId' , '==',userId).where("deletedAt",'==' , null).get();
+     const orders = [];
+     orderSnapShot.forEach(doc => orders.push({id:doc.id,...doc.data()}));
+     return orders;
 
-  // update order status
-
-  static async updateOrderStatus(orderId,userId,status){
-    try{
-        const orderRef = itemsCollections.doc(orderId);
-    const orderDoc = await  orderRef.get();
-    if( !orderDoc.exists || orderDoc.data().userId  !== userId){
-        throw new Error('Order not found or does not belong to the user');
-    }
-    await orderRef.update({ status});
-    return { message:"Order status updated successfully"}
-    }
-    catch(err){
-        console.log(`Error in updating order ${err}`);
-    }
-  
-  }
+   },
+   getAllOrders:async()=>{
+      const ordersRef = await db.collection(ORDER_COLLECTION).where("deletedAt",'==',null).get();
+      const orders = [];
+       ordersRef.forEach( doc => orders.push({ id:doc.id,...doc.data()}));
+       return orders;
+   },
+   updateOrderStatus: async (orderId, status)=>{
+    const updateAt = admin.firestore.FieldValue.serverTimestamp()
+    const orderRef = db.collection(ORDER_COLLECTION).doc(orderId);
+    await orderRef.update({status,updateAt})
+   },
+   deleteOrder:async(orderId)=>{
+    const deletedAt = admin.firestore.FieldValue.serverTimestamp()
+    const orderRef = db.collection(ORDER_COLLECTION).doc(orderId);
+    await orderRef.update({ deletedAt});
+   }
 }
-module.exports = order;
+
+module.exports = orderModel;

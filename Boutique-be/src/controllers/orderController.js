@@ -1,101 +1,118 @@
+
 const order = require("../models/orderModel");
+const cart= require('../models/cartModel');
 const admin = require('firebase-admin');
 const db = admin.firestore();
+const Razorpay = require('razorpay');
+const razorpay = new Razorpay({
+    key_id: "rzp_test_EoH3hlWAoDxXig",
+    key_secret: "HrDgcLoWcvfLLzdSwDT9J8Yj",
+});
 
 
 //create order
 
 exports.createOrder = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(410).json({ message: "Authorization token required" });
-        }
-   
-        console.log("token:",token);
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        console.log("decodedToken:",decodedToken);
-        const userId = decodedToken.uid;
-        console.log("userId:",userId);
-        const { cartItems } = req.body;
+        const { userId, totalAmount, paymentStatus, deliveryAddress, currency } = req.body;
 
-        // Validate cartItems and userId
-        if (!cartItems) {
-            return res.status(400).send({ message: 'Missing required details' });
+        // Step 1: Validate Input
+        if (!userId || !totalAmount || !paymentStatus || !deliveryAddress) {
+            return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        // Fetch product details from Firestore 
-        const productRef = db.collection('items');
+        // Step 2: Fetch Cart Items
+        const cartItems = await cart.getCartByUserId(userId);
+        if (!cartItems || cartItems.length === 0) {
+            return res.status(400).json({ message: 'Cart is empty or invalid' });
+        }
 
-        const productPromises = cartItems.map(async (item) => {
-            const productDoc = await productRef.doc(item.productId).get();
-            if (productDoc.exists) {
-                const productData = productDoc.data();
-                return {
-                    productId: productDoc.id,
-                    productName: productData.name,
-                    price: productData.price,
-                    quantity: item.qty,
-                    totalPrice: productData.price * item.qty,
-                };
-            } else {
-                throw new Error(`Product with ID ${item.productId} not found`);
-            }
-        });
+        console.log("Cart Items:", cartItems);
 
-        // Wait for all the product details to be fetched
-        const resolvedProducts = await Promise.all(productPromises);
+        // Step 3: Generate Razorpay Order
+        const options = {
+            amount: totalAmount * 100, // Amount in paise
+            currency: currency || "INR",
+            receipt: `receipt_${Date.now()}`,
+        };
+        const razorpayOrder = await razorpay.orders.create(options);
 
-        // Calculate the total price
-        const totalprice = resolvedProducts.reduce((acc, item) => acc + item.totalPrice, 0);
+        // Step 4: Create Order Data
+        const orderData = {
+            userId,
+            cartItems,
+            totalAmount,
+            paymentStatus,
+            deliveryAddress,
+            status: 'pending',
+            razorpayOrderId: razorpayOrder.id, // Razorpay order_id
+            deletedAt: null,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
 
-        // Create a new order
-        const newOrder = new order( userId,cartItems,totalprice);
+        // Step 5: Save Order to Database
+        await order.createModel(orderData);
 
-        // Save the order and get the orderId
-        const orderId = await newOrder.save();
-
-        // Send the response with the orderId
-        res.status(201).send({ message: 'Order created successfully', orderId });
-
+        res.status(201).json({ message: 'Order Created Successfully!', razorpayOrder: razorpayOrder });
     } catch (err) {
-        console.log(`Error in creating order: ${err}`);
-        res.status(500).send({ message: 'Internal server error' });
-    }
-};
-
-// get orderbyId
-
-exports.getOrdersByUserId = async (req,res) => {
-    try{
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(410).json({ message: "Authorization token required" });
-        }
-   
-        console.log("token:",token);
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        console.log("decodedToken:",decodedToken);
-        const userId = decodedToken.uid;
-       const orders = await order.getOrderByUserId(userId);
-       res.status(200).send(orders);
-    }
-    catch(err){
-        console.log(`Error in gettingorderbyid${err}`);
+        console.error("Error Creating Order:", err);
+        res.status(500).json({ message: `Internal Server Error: ${err.message}` });
     }
 }
 
-exports.updateOrderStatus = async (req,res) => {
+,
+exports.getOrders = async(req,res)=>{
     try{
-        const userId = req.userId;
-        const { orderId, status } = req.body;
-        if (!orderId || !status) {
-            return res.status(400).send({ message: 'Missing required fields' });
-          }
-          const response = await Order.updateOrderStatus(orderId, userId, status);
-          res.status(200).send(response);
+     const {userId} = req.params;
+      if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+     const orders = await order.getOrderByUserId(userId);
+     res.status(200).json({orders})
+
     }
     catch(err){
-        console.log(`Error in upadateorderbyid${err}`);
+        
+        res.status(500).json({message:`Internal Server Error:${err}`})
+    }
+},
+exports.updateOrder = async(req,res) => {
+    try{
+         const {orderId} = req.params;
+         console.log("orderId:",orderId);
+
+         const {status} = req.body;
+         console.log("status:",status);
+         if (!orderId || !status) {
+            return res.status(400).json({ message: 'Missing required fields' });
+          }
+          await order.updateOrderStatus(orderId,status);
+          res.status(200).json({ message:"Order updated sucessfully"})
+    }
+    catch(err){
+        
+        res.status(500).json({message:`Internal Server Error:${err}`})
+    }
+},
+exports.deleteOrder = async(req,res) => {
+    try{
+        const{orderId} = req.params;
+        await order.deleteOrder(orderId);
+        res.status(200).json({ message:"Order deleted sucessfully!"})
+    }
+    catch(err){
+        
+        res.status(500).json({message:`Internal Server Error:${err}`})
+    }
+},
+exports.getAllOrders = async(req,res) => {
+    try{
+       const orders =  await order.getAllOrders();
+       res.status(200).json({orders});
+    }
+    catch(err){
+        
+        res.status(500).json({message:`Internal Server Error:${err}`})
     }
 }

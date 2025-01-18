@@ -6,7 +6,7 @@ const ITEM_COLLECTION = 'items';
 
 const cart = {
     async getCartByUserId(userId) {
-        try {
+    try {
             // Ensure the userId is valid
             if (!userId || typeof userId !== 'string' || userId.trim() === '') {
                 throw new Error("Invalid userId passed to getCartByUserId");

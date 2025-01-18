@@ -28,18 +28,34 @@ exports.createOrder = async (req, res) => {
 //verify order 
 
 exports.verifyOrder = async (req, res) => {
-    const { order_id, razorpay_payment_id, razorpay_signature } = req.body;
-    console.log("orderid:",order_id);
+    try {
+        const { order_id, razorpay_payment_id, razorpay_signature,orderId,userId } = req.body;
+        console.log("orderid:", order_id);
 
-    const body = `${order_id}|${razorpay_payment_id}`;
+        const body = `${order_id}|${razorpay_payment_id}`;
 
-    const expectedSignature = crypto.createHmac("sha256", "HrDgcLoWcvfLLzdSwDT9J8Yj").update(body.toString()).digest("hex");
-    if (expectedSignature === razorpay_signature) {
-        res.status(200).json({ message: " Payment verified sucessfully" });
+        const expectedSignature = crypto.createHmac("sha256", "HrDgcLoWcvfLLzdSwDT9J8Yj").update(body.toString()).digest("hex");
+        if (expectedSignature === razorpay_signature) {
+            const orderRef = db.collection("orders").doc(orderId);
+            await orderRef.update({
+                status: "paid",
+                paymentId: razorpay_payment_id,
+                paymentVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+                paymentStatus:'success'
+            });
+            const cartRef = db.collection("cart").doc(userId);
+            await cartRef.delete();
+            res.status(200).json({ message: " Payment verified sucessfully" });
+        }
+        else {
+
+            res.status(400).json({ message: "Invalid payment signature" });
+        }
     }
-    else {
-
-        res.status(400).json({ message: "Invalid payment signature" });
+    catch (error) {
+        console.error("Error verifying payment:", error);
+        res.status(500).json({ message: "Failed to verify payment", error });
     }
+
 
 }
