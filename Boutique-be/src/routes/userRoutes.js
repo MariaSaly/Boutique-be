@@ -13,5 +13,10 @@ router.post('/create-user', userController.createUser);
 
 router.get('/getAllUsers',checkAdmin,userController.getAllUser);
 
+//getallusre
+
+
+router.get('/getUserById',userController.getUserById);
+
 
 module.exports = router;

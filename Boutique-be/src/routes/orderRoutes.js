@@ -17,6 +17,10 @@ router.post('/createOrders',orderControllers.createOrder);
 
 router.get('/orderByUserId/:userId', orderControllers.getOrders);
 
+//Route to get orderbyuserId
+
+router.get('/orderById/:orderId', orderControllers.getOrdersById);
+
 
 
 //Route to get orderbyuserId

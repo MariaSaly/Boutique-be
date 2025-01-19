@@ -35,3 +35,13 @@ exports.getAllUser = async (req,res) => {
         res.status(500).json({message:"Failed to get the users"});
     }
 }
+exports.getUserById = async (req,res) => {
+    try{
+        const {email} = req.query;
+      const userData = await users.getUserById(email);
+      res.status(200).send(userData);
+    }
+    catch(err){
+        res.status(500).json({message:"Failed to get the users"});
+    }
+}

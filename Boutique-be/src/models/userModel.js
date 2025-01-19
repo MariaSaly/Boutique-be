@@ -39,6 +39,15 @@ class users{
         });
         return users;
     }
+    static async getUserById(email){
+        const snapshot = await userCollections.where("email","==",email).get();
+        const users = [];
+        snapshot.forEach((doc)=>{
+            users.push({ id:doc.id,...doc.data()})
+        });
+        return users
+    }
+    
 }
 
 module.exports =  users;

@@ -19,6 +19,22 @@ const orderModel = {
      return orders;
 
    },
+
+   getOrderById: async (orderId) => {
+      try {
+        const orderDoc = await db.collection(ORDER_COLLECTION).doc(orderId).get();
+        
+        if (orderDoc.exists) {
+          return { id: orderDoc.id, ...orderDoc.data() }; // Return the order as an object
+        } else {
+          throw new Error("Order not found");
+        }
+      } catch (error) {
+        console.error("Error fetching order by ID:", error);
+        throw error; // Rethrow the error for further handling
+      }
+    },
+    
    getAllOrders:async()=>{
       const ordersRef = await db.collection(ORDER_COLLECTION).where("deletedAt",'==',null).get();
       const orders = [];

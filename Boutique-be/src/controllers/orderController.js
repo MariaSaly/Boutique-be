@@ -14,7 +14,7 @@ const razorpay = new Razorpay({
 
 exports.createOrder = async (req, res) => {
     try {
-        const { userId, totalAmount, paymentStatus, deliveryAddress, currency } = req.body;
+        const { userId, totalAmount, paymentStatus, deliveryAddress, currency ,email } = req.body;
 
         // Step 1: Validate Input
         if (!userId || !totalAmount || !paymentStatus || !deliveryAddress) {
@@ -41,6 +41,7 @@ exports.createOrder = async (req, res) => {
         const orderData = {
             userId,
             cartItems,
+            email,
             totalAmount,
             paymentStatus,
             deliveryAddress,
@@ -48,7 +49,7 @@ exports.createOrder = async (req, res) => {
             razorpayOrderId: razorpayOrder.id, // Razorpay order_id
             deletedAt: null,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        };
+            Date:new Date()        };
 
          // Step 5: Save Order to Database
          const orderRef = await order.createModel(orderData); // Assuming this is a Firestore collection reference
@@ -82,6 +83,23 @@ exports.getOrders = async(req,res)=>{
         res.status(500).json({message:`Internal Server Error:${err}`})
     }
 },
+exports.getOrdersById = async(req,res)=>{
+    try{
+     const {orderId} = req.params;
+      if (!orderId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+     const orders = await order.getOrderById(orderId);
+     res.status(200).json({orders})
+
+    }
+    catch(err){
+        
+        res.status(500).json({message:`Internal Server Error:${err}`})
+    }
+},
+
 exports.updateOrder = async(req,res) => {
     try{
          const {orderId} = req.params;
