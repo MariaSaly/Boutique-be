@@ -4,6 +4,7 @@ const multer = require("multer");
 const path = require("path");
 const itemControllers = require('../controllers/itemControllers');;
 const authenticateUser = require('../middleware/authenticateUser.middleware');
+const checkAdmin = require('../middleware/checkAdmin.middleware');
 
 
 // Configure Multer for disk storage
@@ -25,10 +26,10 @@ const upload = multer({ storage: storage });
 
 //define routes
 
-router.post('/createItem',upload.array("image"),authenticateUser, itemControllers.createItem);
+router.post('/createItem',upload.array("image"),checkAdmin, itemControllers.createItem);
 router.get('/getItem',itemControllers.getAllItem);
 router.get('/getItemById/:id', itemControllers.getById);
-router.patch('/updateItem/:id',upload.single("image"),itemControllers.updateItem);
-router.delete('/deleteItem/:id', itemControllers.deleteItem);
+router.patch('/updateItem/:id',checkAdmin,upload.array("image"),itemControllers.updateItem);
+router.delete('/deleteItem/:id', checkAdmin,itemControllers.deleteItem);
 
 module.exports = router;

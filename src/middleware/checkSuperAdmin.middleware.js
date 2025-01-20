@@ -12,7 +12,7 @@ const checkUser = async  (req,res,next) => {
            console.log("decodeTokenId:",decodeTokenId);
            const user = decodeTokenId.role;
            console.log("user:",user);
-           if(user === 'admin' || user ==='superAdmin'){
+           if(user === 'SuperAdmin'){
             return next();
            }
            return res.status(403).json({ message: 'Access denied. Admins only.' });
