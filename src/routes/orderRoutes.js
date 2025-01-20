@@ -29,7 +29,7 @@ router.patch('/:orderId', orderControllers.updateOrder);
 
 //delete order
 
-router.patch('/deleteOrder/:orderId',orderControllers.deleteOrder);
+router.delete('/deleteOrder/:orderId',orderControllers.deleteOrder);
 
 //getAllorder
 
