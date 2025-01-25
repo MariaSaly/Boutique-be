@@ -1,81 +1,126 @@
 const item = require("../models/itemModel");
 const admin = require('firebase-admin');
 
+const db = admin.firestore();
+
 //create new item 
 
-exports.createItem = async (req,res) => {
-    try{
-       const {name,price,description,category,isCustomizable,stock,vedioLink} = req.body;
-       let imageUrl = [];
-       if(req.files){
-        imageUrl = req.files.map(file => `/uploads/${file.filename}`);
-        console.log("imageUrls:", imageUrl);
-       
-       }
-        
-      
-       const itemData = {
-        name,
-        price,
-        description,
-        imageUrl,
-        category,
-        isCustomizable,
-        stock,
-        vedioLink
+exports.createItem = async (req, res) => {
+    try {
+        const { name, price, description, category, isCustomizable, stock, vedioLink } = req.body;
+        let imageUrl = [];
+        if (req.files) {
+            imageUrl = req.files.map(file => `/uploads/${file.filename}`);
+            console.log("imageUrls:", imageUrl);
 
-    };
-       // Create item using the ItemModel (handling both file and other properties)
-       const newItem = await item.create(itemData);
-       res.status(201).send(newItem);
+        }
+
+
+        const itemData = {
+            name,
+            price,
+            description,
+            imageUrl,
+            category,
+            isCustomizable,
+            stock,
+            vedioLink
+
+        };
+        // Create item using the ItemModel (handling both file and other properties)
+        const newItem = await item.create(itemData);
+        res.status(201).send(newItem);
     }
-    catch(err){
-        res.status(500).send({ error:`Failed to create item:${err}`});
+    catch (err) {
+        res.status(500).send({ error: `Failed to create item:${err}` });
     }
 }
- // get all items 
+// get all items 
+exports.searchItems = async (req, res) => {
+    try {
+        const { query } = req.query;
 
- exports.getAllItem = async (req,res) => {
-    try{
-    const  { category,isCustomizable} = req.query;
-    const filter = {};
-    if(category){
-        filter.category = category;
+        if (!query) {
+            return res.status(400).send({ error: 'Search query is required' });
+        }
+
+        let itemsRef = db.collections('items');
+
+        const querySnapshot = await itemsRef.where('name', '>=', query)
+            .where('name', '<=', query + '\uf8ff') // Case-insensitive matching
+            .get();
+        let items = [];
+        querySnapshot.forEach((doc) => {
+            items.push(doc.data());
+        });
+        if (items.lenght === 0) {
+            const descriptionSnapshot = await itemsRef
+                .where('description', '>=', query)
+                .where('description', '<=', query + '\uf8ff')
+                .get();
+            descriptionSnapshot.forEach((doc) => {
+                items.push(doc.data());
+            });
+            const categorySnapshot = await itemsRef
+                .where('category', '>=', query)
+                .where('category', '<=', query + '\uf8ff')
+                .get();
+
+            categorySnapshot.forEach((doc) => {
+                items.push(doc.data());
+            });
+
+        }
+        // Remove duplicates (if an item is found in multiple fields)
+        items = [...new Set(items.map(item => JSON.stringify(item)))].map(item => JSON.parse(item));
+        // Send the results back to the frontend
+        res.status(200).send(items);
     }
-    if(isCustomizable !== undefined){
-        filter.isCustomizable = isCustomizable === 'true' ;
+    catch (err) {
+        res.status(500).send({ message: ` Search result not found${err}` });
     }
-  
-      
-    console.log("filter:",filter);
-     const items = await item.getAll(filter);
-     res.status(200).send(items)
+}
+exports.getAllItem = async (req, res) => {
+    try {
+        const { category, isCustomizable } = req.query;
+        const filter = {};
+        if (category) {
+            filter.category = category;
+        }
+        if (isCustomizable !== undefined) {
+            filter.isCustomizable = isCustomizable === 'true';
+        }
+
+
+        console.log("filter:", filter);
+        const items = await item.getAll(filter);
+        res.status(200).send(items)
     }
-    catch(err){
-        res.status(500).send({ error:`Failed to get all items:${err}`});
+    catch (err) {
+        res.status(500).send({ error: `Failed to get all items:${err}` });
     }
- }
- exports.getById = async (req,res) => {
-    const {id} = req.params;
-    try{
-     const result = await item.getById(id);
-     res.status(200).send(result)
+}
+exports.getById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await item.getById(id);
+        res.status(200).send(result)
     }
-    catch(error){
-        res.status(500).send({ error: `Failed to get itemById:${error}`});
+    catch (error) {
+        res.status(500).send({ error: `Failed to get itemById:${error}` });
     }
- }
+}
 //update an item
 const fs = require('fs');
 const path = require('path');
 
 exports.updateItem = async (req, res) => {
     const { id } = req.params;
-    const {name,price,description,category,isCustomizable,stock} = req.body;
+    const { name, price, description, category, isCustomizable, stock } = req.body;
     let imageUrl = null;
-    if(req.file){
-     imageUrl = `/uploads/${req.file.filename}`;
-     console.log("iamgeUrl:", imageUrl)
+    if (req.file) {
+        imageUrl = `/uploads/${req.file.filename}`;
+        console.log("iamgeUrl:", imageUrl)
     }
     try {
         console.log("id:", id);
@@ -96,7 +141,7 @@ exports.updateItem = async (req, res) => {
         // console.log("imageUrl:",imageUrl);
 
         // // Handle new image upload
-        
+
         const itemData = {
             name,
             price,
@@ -105,7 +150,7 @@ exports.updateItem = async (req, res) => {
             category,
             isCustomizable,
             stock
-    
+
         };
 
         // Prepare the updated data
@@ -116,7 +161,7 @@ exports.updateItem = async (req, res) => {
         // };
 
         // Update the item in Firestore
-        await item.update(id,itemData);
+        await item.update(id, itemData);
         res.status(200).send({ message: 'Item updated successfully' });
     } catch (error) {
         console.error("Error updating item:", error.message);
@@ -125,14 +170,14 @@ exports.updateItem = async (req, res) => {
 };
 
 
- //delete an item 
+//delete an item 
 
- exports.deleteItem = async (req, res) => {
+exports.deleteItem = async (req, res) => {
     const { id } = req.params;
     try {
-      const result = await item.delete(id);
-      res.status(200).send(result);
+        const result = await item.delete(id);
+        res.status(200).send(result);
     } catch (error) {
-      res.status(500).send({ error: `Failed to delete item:${error}` });
+        res.status(500).send({ error: `Failed to delete item:${error}` });
     }
 }
