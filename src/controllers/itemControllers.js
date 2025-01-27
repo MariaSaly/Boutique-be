@@ -44,14 +44,14 @@ exports.searchItems = async (req, res) => {
             return res.status(400).send({ error: 'Search query is required' });
         }
 
-        let itemsRef = db.collections('items');
+        let itemsRef = db.collection('items');
 
         const querySnapshot = await itemsRef.where('name', '>=', query)
             .where('name', '<=', query + '\uf8ff') // Case-insensitive matching
             .get();
         let items = [];
         querySnapshot.forEach((doc) => {
-            items.push(doc.data());
+            items.push({id:doc.id,...doc.data()});
         });
         if (items.lenght === 0) {
             const descriptionSnapshot = await itemsRef
@@ -59,7 +59,7 @@ exports.searchItems = async (req, res) => {
                 .where('description', '<=', query + '\uf8ff')
                 .get();
             descriptionSnapshot.forEach((doc) => {
-                items.push(doc.data());
+                items.push({id:doc.id,...doc.data()});
             });
             const categorySnapshot = await itemsRef
                 .where('category', '>=', query)
@@ -67,7 +67,7 @@ exports.searchItems = async (req, res) => {
                 .get();
 
             categorySnapshot.forEach((doc) => {
-                items.push(doc.data());
+                items.push({id:doc.id,...doc.data()});
             });
 
         }
