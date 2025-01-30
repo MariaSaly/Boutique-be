@@ -16,7 +16,7 @@ router.get('/getAllUsers',checkAdmin,userController.getAllUser);
 //getallusre
 
 
-router.get('/getUserById',checkAdmin,userController.getUserById);
+router.get('/getUserById',userController.getUserById);
 
 
 module.exports = router;
