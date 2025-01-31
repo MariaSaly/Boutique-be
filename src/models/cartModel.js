@@ -128,42 +128,45 @@ const cart = {
             if (!userId || typeof userId !== 'string' || userId.trim() === '') {
                 throw new Error("Invalid userId passed to updateCart");
             }
-
+    
             console.log('Updating cart for userId:', userId);
             console.log('New Cart Items:', newCartItems);
-
+    
             const cartRef = db.collection(CART_COLLECTION).doc(userId.trim());
             const cartDoc = await cartRef.get();
-
+    
             let existingItems = [];
-
+    
             if (cartDoc.exists) {
                 const cartData = cartDoc.data();
                 existingItems = cartData.items || [];
             }
-
-            // Merge existing items with newCartItems
+    
+            // Merge existing items with newCartItems based on productId and size
             for (const newItem of newCartItems) {
-                const existingItem = existingItems.find(item => item.productId === newItem.productId);
-
+                const existingItem = existingItems.find(item => 
+                    item.productId === newItem.productId && item.size === newItem.size
+                );
+    
                 if (existingItem) {
-                    // Update quantity of the existing item
+                    // Update quantity of the existing item with the same size
                     existingItem.quantity += newItem.quantity;
                 } else {
-                    // Add the new item
+                    // Add the new item with size
                     existingItems.push(newItem);
                 }
             }
-
+    
             // Save updated cart
             await cartRef.set({ userId, items: existingItems });
-
+    
             console.log('Cart updated successfully');
         } catch (error) {
             console.error('Error updating cart:', error);
             throw new Error('Failed to update cart');
         }
     }
+    
 
 
 

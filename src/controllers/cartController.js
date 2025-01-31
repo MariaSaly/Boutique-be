@@ -151,13 +151,12 @@ async function mergeGuestCartToUserCart(guestId, userId) {
 }
 
 
-
 exports.addToCart = async (req, res) => {
     try {
-        const { userId, productId, quantity } = req.body;
+        const { userId, productId, size, quantity } = req.body;
 
         // Validate input
-        if (!userId || !productId || typeof quantity !== 'number') {
+        if (!userId || !productId || !size || typeof quantity !== 'number') {
             return res.status(400).json({ message: 'Invalid input data' });
         }
 
@@ -181,15 +180,15 @@ exports.addToCart = async (req, res) => {
         // Ensure cart.items exists as an array
         cart.items = cart.items || [];
 
-        // Check if the item already exists in the cart
-        const existingItem = cart.items.find(item => item.productId === productId);
+        // Check if the item with the same `productId` and `size` already exists
+        const existingItem = cart.items.find(item => item.productId === productId && item.size === size);
 
         if (existingItem) {
             // Update the quantity of the existing item
             existingItem.quantity += quantity;
         } else {
-            // Add a new item to the cart
-            cart.items.push({ productId, quantity });
+            // Add a new item to the cart with size
+            cart.items.push({ productId, size, quantity });
         }
 
         console.log('Cart after update:', cart);
@@ -203,6 +202,7 @@ exports.addToCart = async (req, res) => {
         return res.status(500).json({ message: 'Failed to add item to cart', error: err.message });
     }
 };
+
 
 exports.updateCartItems = async (req, res) => {
     try {
