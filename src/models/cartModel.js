@@ -121,7 +121,50 @@ const cart = {
             console.error('Error updating cart:', error);
             throw new Error('Failed to update cart');
         }
+    },
+    async incrementItemQuantity(cartId, productId, size) {
+        try {
+            if (!cartId || !productId || !size) {
+                throw new Error("Invalid input data");
+            }
+    
+            console.log(`Incrementing quantity for productId: ${productId}, size: ${size} in cart: ${cartId}`);
+    
+            // Fetch the current cart
+            const cartRef = db.collection(CART_COLLECTION).doc(cartId);
+            const cartSnapshot = await cartRef.get();
+    
+            if (!cartSnapshot.exists) {
+                throw new Error('Cart not found');
+            }
+    
+            const cart = cartSnapshot.data();
+            let itemFound = false;
+    
+            // Check if the item exists in the cart
+            cart.items = cart.items || [];
+            const itemIndex = cart.items.findIndex(item => item.productId === productId && item.size === size);
+    
+            if (itemIndex !== -1) {
+                // Item found, increment quantity
+                cart.items[itemIndex].quantity += 1;
+                itemFound = true;
+            }
+    
+            if (!itemFound) {
+                throw new Error('Item not found in the cart');
+            }
+    
+            // Update the cart with the new quantity
+            await cartRef.update({ items: cart.items });
+    
+            console.log('Item quantity incremented successfully');
+        } catch (error) {
+            console.error('Error incrementing item quantity:', error);
+            throw new Error('Failed to increment item quantity');
+        }
     }
+    
     ,
     async createCart(userId, newCartItems) {
         try {

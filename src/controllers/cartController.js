@@ -1,3 +1,4 @@
+
 const cartModel = require('../models/cartModel');
 const admin = require('firebase-admin');
 const db = admin.firestore();
@@ -160,41 +161,46 @@ exports.addToCart = async (req, res) => {
             return res.status(400).json({ message: 'Invalid input data' });
         }
 
-        console.log(`Getting cart for userId: ${userId}`);
+        console.log(`Fetching cart for userId: ${userId}`);
 
-        // Fetch the cart for the user
+        // Fetch user's cart
         const cartQuerySnapshot = await cartModel.getCartByUserId(userId);
-        let cart;
+        let cart = null;
 
-        if (cartQuerySnapshot.size > 0) {
-            console.log(`Number of docs found: ${cartQuerySnapshot.size}`);
-            const cartDocs = cartQuerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            cart = cartDocs[0]; // Assuming one cart per user; modify if multiple carts are allowed.
+        if (Array.isArray(cartQuerySnapshot) && cartQuerySnapshot.length > 0) {
+            console.log(`Cart found for user: ${userId}`);
+            cart = cartQuerySnapshot[0]; // Directly access the first cart
         } else {
             console.log('No cart found, initializing a new one.');
+            // Initialize a new cart and set its document ID to the userId
             cart = { userId, items: [] };
+            cart.id = userId;
         }
 
         console.log('Cart before update:', cart);
 
-        // Ensure cart.items exists as an array
+        // Ensure cart.items is an array
         cart.items = cart.items || [];
 
-        // Check if the item with the same `productId` and `size` already exists
-        const existingItem = cart.items.find(item => item.productId === productId && item.size === size);
+        // Check if the item with the same productId and size already exists
+        const existingItem = cart.items.find(
+            item => item.productId === productId && item.size === size
+        );
+        console.log("existingItem:", existingItem);
+        console.log("productId:", productId);
+        console.log("size:", size);
 
         if (existingItem) {
-            // Update the quantity of the existing item
-            existingItem.quantity += quantity;
+            // If the item exists, increment its quantity using incrementItemQuantity
+            await cartModel.incrementItemQuantity(cart.id, productId, size);
+            console.log("Quantity incremented using incrementItemQuantity function.");
         } else {
-            // Add a new item to the cart with size
+            // Otherwise, add the new item
             cart.items.push({ productId, size, quantity });
+            // Persist the updated cart back to Firestore
+            await cartModel.updateCart(cart.id, cart.items);
+            console.log("New item added and cart updated.");
         }
-
-        console.log('Cart after update:', cart);
-
-        // Persist the updated cart back to Firestore
-        await cartModel.createCart(userId, cart.items);
 
         return res.status(200).json({ message: 'Item added to cart successfully' });
     } catch (err) {
@@ -202,6 +208,8 @@ exports.addToCart = async (req, res) => {
         return res.status(500).json({ message: 'Failed to add item to cart', error: err.message });
     }
 };
+
+
 
 
 exports.updateCartItems = async (req, res) => {
