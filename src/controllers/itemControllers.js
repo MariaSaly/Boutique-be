@@ -88,7 +88,7 @@ exports.getAllItem = async (req, res) => {
             filter.category = category;
         }
         if (isCustomizable !== undefined) {
-            filter.isCustomizable = isCustomizable === 'true';
+            filter.isCustomizable = isCustomizable ;
         }
 
 
