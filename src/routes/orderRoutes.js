@@ -25,7 +25,7 @@ router.get('/orderById/:orderId',checkAdmin, orderControllers.getOrdersById);
 
 //Route to get orderbyuserId
 
-router.patch('/:orderId', checkAdmin,orderControllers.updateOrder);
+router.patch('/:orderId',orderControllers.updateOrder);
 
 //delete order
 

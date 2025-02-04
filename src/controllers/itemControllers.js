@@ -7,7 +7,7 @@ const db = admin.firestore();
 
 exports.createItem = async (req, res) => {
     try {
-        const { name, price, description, category, isCustomizable, stock, vedioLink } = req.body;
+        const { name, price, description, category, isCustomizable, stock,isStock, vedioLink } = req.body;
         let imageUrl = [];
         if (req.files) {
             imageUrl = req.files.map(file => `/uploads/${file.filename}`);
@@ -24,6 +24,7 @@ exports.createItem = async (req, res) => {
             category,
             isCustomizable,
             stock,
+            isStock,
             vedioLink
 
         };
