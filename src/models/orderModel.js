@@ -46,6 +46,20 @@ const orderModel = {
     const orderRef = db.collection(ORDER_COLLECTION).doc(orderId);
     await orderRef.update({status,updateAt})
    },
+   updateTrackingId: async (orderId, trackingId) => {
+    const updateAt = admin.firestore.FieldValue.serverTimestamp();
+    const orderRef = db.collection(ORDER_COLLECTION).doc(orderId);
+ 
+    console.log("Updating order with trackingId:", trackingId);
+    try {
+       await orderRef.update({ trackingId, updateAt });
+       console.log("Tracking ID updated successfully");
+    } catch (error) {
+       console.error("Error updating trackingId:", error);
+       throw error; // rethrow to handle at higher level
+    }
+ }
+, 
    deleteOrder:async(orderId)=>{
     const deletedAt = admin.firestore.FieldValue.serverTimestamp()
     const orderRef = db.collection(ORDER_COLLECTION).doc(orderId);

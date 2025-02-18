@@ -46,6 +46,7 @@ exports.createOrder = async (req, res) => {
             paymentStatus,
             deliveryAddress,
             status: 'pending',
+            
             razorpayOrderId: razorpayOrder.id, // Razorpay order_id
             deletedAt: null,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -125,6 +126,23 @@ exports.updateOrder = async(req,res) => {
         res.status(500).json({message:`Internal Server Error:${err}`})
     }
 },
+exports.updateTrackingId = async(req,res)=>{
+    try{
+        const {orderId} =  req.params;
+        console.log("orderId:",orderId);
+        const {trackingId} = req.body;
+        console.log("trackingId:",trackingId);
+        if (!orderId || !trackingId) {
+            return res.status(400).json({ message: 'Missing required fields' });
+          }
+        await  order.updateTrackingId(orderId,trackingId);
+        res.status(200).json({ message:`TrackingId updated succesfully`})
+    }
+    catch(err){
+        res.status(500).json({ message:'Internal Server Error:${err}'})
+    }
+   
+}
 exports.deleteOrder = async(req,res) => {
     try{
         const{orderId} = req.params;

@@ -27,6 +27,8 @@ router.get('/orderById/:orderId',checkAdmin, orderControllers.getOrdersById);
 
 router.patch('/:orderId',orderControllers.updateOrder);
 
+router.patch('/updateTrackingId/:orderId',orderControllers.updateTrackingId)
+
 //delete order
 
 router.delete('/deleteOrder/:orderId',checkAdmin,orderControllers.deleteOrder);
