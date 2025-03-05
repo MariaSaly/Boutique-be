@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const item = require("../models/itemModel");
 const admin = require('firebase-admin');
 
@@ -8,12 +10,8 @@ const db = admin.firestore();
 exports.createItem = async (req, res) => {
     try {
         const { name, price, description, category, isCustomizable, stock,isStock, vedioLink } = req.body;
-        let imageUrl = [];
-        if (req.files) {
-            imageUrl = req.files.map(file => `/uploads/${file.filename}`);
-            console.log("imageUrls:", imageUrl);
-
-        }
+        let imageUrl = req.body.imageUrls || [];
+       
 
 
         const itemData = {

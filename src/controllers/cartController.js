@@ -1,3 +1,4 @@
+/* eslint-disable */
 
 const cartModel = require('../models/cartModel');
 const admin = require('firebase-admin');

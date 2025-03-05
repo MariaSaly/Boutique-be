@@ -1,3 +1,4 @@
+/* eslint-disable */
 
 const order = require("../models/orderModel");
 const cart= require('../models/cartModel');

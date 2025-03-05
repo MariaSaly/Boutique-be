@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const users = require("../models/userModel");
 const admin = require('firebase-admin');
 

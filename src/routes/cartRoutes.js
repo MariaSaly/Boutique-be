@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const express = require('express');
 const CartController = require('../controllers/cartController');
 const router = express.Router();

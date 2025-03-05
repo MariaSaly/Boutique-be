@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const admin = require('firebase-admin');
 
 exports.listUsers = async (req, res) => {

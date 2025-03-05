@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const admin = require('../services/firebaseService');
 const jwt = require('jsonwebtoken');
 

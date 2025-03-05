@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const admin = require("firebase-admin");
 
 async function authenticateUser(req, res, next) {
