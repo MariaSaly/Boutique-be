@@ -11,7 +11,7 @@ exports.createItem = async (req, res) => {
     try {
         const { name, price, description, category, isCustomizable, stock,isStock, vedioLink } = req.body;
         let imageUrl = req.body.imageUrls || [];
-       
+        console.log("Received image URLs:", imageUrl);  // Debugging
 
 
         const itemData = {

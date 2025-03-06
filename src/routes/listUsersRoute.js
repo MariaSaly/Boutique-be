@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const multer = require("multer");
+//const multer = require("multer");
 const path = require("path");
 const listUsersControllers = require('../controllers/listUserController');
 const checkAdmin = require('../middleware/checkAdmin.middleware')
