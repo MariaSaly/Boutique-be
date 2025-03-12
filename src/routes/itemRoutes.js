@@ -89,7 +89,29 @@ router.post('/createItem', async (req, res) => {
 router.get('/getItem', itemControllers.getAllItem);
 router.get('/getItemById/:id', itemControllers.getById);
 router.get('/searchItems', itemControllers.searchItems);
-router.patch('/updateItem/:id', checkAdmin, itemControllers.updateItem);
+router.put('/updateItem/:id', checkAdmin, async (req, res) => {
+  try {
+    console.log("Processing file upload for update...");
+
+    // Check if files are uploaded
+    if (req.files && req.files.length > 0) {
+      // Upload files to Firebase Storage
+      const fileUrls = await Promise.all(
+        req.files.map((file) => uploadFile(file))
+      );
+      console.log("Files uploaded successfully:", fileUrls);
+
+      // Add file URLs to the request body
+      req.body.imageUrls = fileUrls;
+    }
+
+    // Call the updateItem controller function
+    await itemControllers.updateItem(req, res); // Await the function call
+  } catch (error) {
+    console.error("Upload Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
 router.delete('/deleteItem/:id', checkAdmin, itemControllers.deleteItem);
 
 module.exports = router;

@@ -2,6 +2,12 @@
 
 const item = require("../models/itemModel");
 const admin = require('firebase-admin');
+//update an item
+const fs = require('fs');
+const path = require('path');
+const multer = require("multer");
+const upload = multer();
+
 
 const db = admin.firestore();
 
@@ -9,7 +15,7 @@ const db = admin.firestore();
 
 exports.createItem = async (req, res) => {
     try {
-        const { name, price, description, category, isCustomizable, stock,isStock, vedioLink } = req.body;
+        const { name, price, description, category,subcategory, isCustomizable, stock,isStock, vedioLink } = req.body;
         let imageUrl = req.body.imageUrls || [];
         console.log("Received image URLs:", imageUrl);  // Debugging
 
@@ -20,6 +26,7 @@ exports.createItem = async (req, res) => {
             description,
             imageUrl,
             category,
+            subcategory,
             isCustomizable,
             stock,
             isStock,
@@ -81,10 +88,13 @@ exports.searchItems = async (req, res) => {
 }
 exports.getAllItem = async (req, res) => {
     try {
-        const { category, isCustomizable } = req.query;
+        const { category, isCustomizable,subcategory } = req.query;
         const filter = {};
         if (category) {
             filter.category = category;
+        }
+        if(subcategory){
+            filter.subcategory = subcategory;
         }
         if (isCustomizable !== undefined) {
             filter.isCustomizable = isCustomizable ;
@@ -109,64 +119,77 @@ exports.getById = async (req, res) => {
         res.status(500).send({ error: `Failed to get itemById:${error}` });
     }
 }
-//update an item
-const fs = require('fs');
-const path = require('path');
+
+
+
 
 exports.updateItem = async (req, res) => {
     const { id } = req.params;
-    const { name, price, description, category, isCustomizable, stock } = req.body;
-    let imageUrl = null;
-    if (req.file) {
-        imageUrl = `/uploads/${req.file.filename}`;
-        console.log("iamgeUrl:", imageUrl)
-    }
+    const { name, price, description, category,subcategory, isCustomizable, stock, isStock, vedioLink } = req.body;
+    let imageUrls = req.body.imageUrls || []; // Use consistent variable name
+
     try {
         console.log("id:", id);
+        console.log("Raw req.body:", req.body);
 
-        // // Fetch the existing item from Firestore
-        // const itemRef = admin.firestore().collection('items').doc(id);
-        // // console.log("itemRef:",itemRef);
-        // const itemDoc = await itemRef.get();
-        // // console.log("itemDoc:",itemDoc);
+        // Fetch the existing item from Firestore
+        const itemRef = admin.firestore().collection('items').doc(id);
+        const itemDoc = await itemRef.get();
 
-        // // if (!itemDoc.exists) {
-        // //     return res.status(404).send({ error: "Item not found" });
-        // // }
+        if (!itemDoc.exists) {
+            return res.status(404).send({ error: "Item not found" });
+        }
 
-        // const existingItem = itemDoc.data();
-        // console.log("existingItem:",existingItem);
-        // let imageUrl = existingItem.imageUrl; // Keep existing image by default
-        // console.log("imageUrl:",imageUrl);
+        const existingItem = itemDoc.data();
+        let updatedImageUrls = existingItem.imageUrl || []; // Ensure updatedImageUrls is always an array
 
-        // // Handle new image upload
+        // Handle new image upload
+        if (imageUrls && imageUrls.length > 0) {
+            // Delete the old files from Firebase Storage (if they exist)
+            if (existingItem.imageUrl && existingItem.imageUrl.length > 0) {
+                await Promise.all(
+                    existingItem.imageUrl.map(async (url) => {
+                        try {
+                            const filePath = decodeURIComponent(url.split('/o/')[1].split('?')[0]); // Extract correct file path
+                            await bucket.file(filePath).delete();
+                            console.log(`Deleted old image: ${filePath}`);
+                        } catch (error) {
+                            console.error(`Failed to delete old image: ${url}`, error);
+                        }
+                    })
+                );
+            }
 
+            // Update with new image URLs
+            updatedImageUrls = imageUrls;  
+        }
+
+        // Prepare the updated data
         const itemData = {
             name,
             price,
             description,
-            imageUrl,
+            imageUrl: updatedImageUrls,
             category,
+            subcategory,
             isCustomizable,
-            stock
-
+            stock,
+            isStock,
+            vedioLink
         };
 
-        // Prepare the updated data
-        // const updatedData = {
-        //     ...req.body, // Include other fields from the request body
-        //     imageUrl, // Update imageUrl if a new image was uploaded
-        //     updatedAt: admin.firestore.FieldValue.serverTimestamp(), // Use Firestore timestamp
-        // };
+        console.log("itemData to update:", itemData);
 
         // Update the item in Firestore
-        await item.update(id, itemData);
+        await itemRef.update(itemData);
+
         res.status(200).send({ message: 'Item updated successfully' });
     } catch (error) {
         console.error("Error updating item:", error.message);
         res.status(500).send({ error: `Failed to update item: ${error.message}` });
     }
 };
+
 
 
 //delete an item 

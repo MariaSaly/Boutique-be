@@ -21,7 +21,7 @@ const app = express();
 
 // Enable CORS
 app.use(cors({
-    origin: 'https://same-pinch.com',  
+    origin: ['https://same-pinch.com' , 'http://localhost:4200'] ,  
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], 
     allowedHeaders: ['Content-Type', 'Authorization']
 }));

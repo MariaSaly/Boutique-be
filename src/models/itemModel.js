@@ -28,7 +28,7 @@ class item{
 
 
     static async create (itemData){
-        const {name,price,description ,imageUrl,category,isCustomizable,stock,vedioLink} = itemData;
+        const {name,price,description ,imageUrl,category,subcategory,isCustomizable,stock,vedioLink} = itemData;
         
         const newItem = {
             name,
@@ -36,6 +36,7 @@ class item{
             description,
             imageUrl,
             category,
+            subcategory,
             stock,            
             isCustomizable,
             deletedAt:null,
@@ -54,11 +55,14 @@ class item{
     static async getAll(filter = {}) {
         let query = itemsCollections;
     
-
-        
         // Filter by category if provided
         if (filter.category) {
             query = query.where("category", "==", filter.category);
+        }
+    
+        // Filter by subcategory if provided
+        if (filter.subcategory) {
+            query = query.where("subcategory", "==", filter.subcategory);
         }
     
         // Filter by isCustomizable if provided
@@ -66,18 +70,19 @@ class item{
             query = query.where("isCustomizable", "==", filter.isCustomizable);
         }
     
-        // Ensure the query includes documents with the 'deletedAt' field
-        query = query.where("deletedAt", "==", null); // Include items where deletedAt is null or undefined
+        // Ensure the query includes documents where 'deletedAt' is null
+        query = query.where("deletedAt", "==", null);
     
-        // Get the snapshot of the filtered query
+        // Execute the query and get the snapshot
         const snapshot = await query.get();
     
-        // Map the query result to include the document ID and the data
+        // Map the query results to include document ID
         return snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
         }));
     }
+    
     
 
     static async getById(id) {
