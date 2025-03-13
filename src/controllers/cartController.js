@@ -155,8 +155,11 @@ async function mergeGuestCartToUserCart(guestId, userId) {
 
 exports.addToCart = async (req, res) => {
     try {
-        const { userId, productId, size, quantity } = req.body;
+        const { userId, productId, size } = req.body;
+        let { quantity } = req.body;
 
+        // Set default quantity to 1 if it's missing or invalid
+        quantity = typeof quantity === 'number' && quantity > 0 ? quantity : 1;
         // Validate input
         if (!userId || !productId || !size || typeof quantity !== 'number') {
             return res.status(400).json({ message: 'Invalid input data' });

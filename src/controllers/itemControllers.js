@@ -28,7 +28,7 @@ exports.createItem = async (req, res) => {
             category,
             subcategory,
             isCustomizable,
-            stock,
+            stock:Number(stock),
             isStock,
             vedioLink
 
@@ -173,7 +173,7 @@ exports.updateItem = async (req, res) => {
             category,
             subcategory,
             isCustomizable,
-            stock,
+            stock:Number(stock),
             isStock,
             vedioLink
         };
