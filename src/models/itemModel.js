@@ -28,7 +28,7 @@ class item{
 
 
     static async create (itemData){
-        const {name,price,description ,imageUrl,category,subcategory,isCustomizable,stock,vedioLink} = itemData;
+        const {name,price,description ,imageUrl,category,subcategory,isCustomizable,stock,vedioLink,colorPattern} = itemData;
         
         const newItem = {
             name,
@@ -41,6 +41,7 @@ class item{
             isCustomizable,
             deletedAt:null,
             vedioLink,
+            colorPattern,
            
             createdAt:admin.firestore.FieldValue.serverTimestamp(),
         };
@@ -108,7 +109,7 @@ class item{
     static async update(id,itemData){
         const {name,price,description,imageUrl,category,
             stock,            
-            isCustomizable} = itemData;
+            isCustomizable,colorPattern} = itemData;
             console.log("itemData:",itemData);
         const itemRef = itemsCollections.doc(id);
         await itemRef.update({
@@ -118,7 +119,7 @@ class item{
             imageUrl,
             category,
             stock,
-            isCustomizable,
+            isCustomizable,colorPattern,
             updatedAt:admin.firestore.FieldValue.serverTimestamp()
         });
         return { message: "Items updated sucessfully"};

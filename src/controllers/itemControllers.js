@@ -15,7 +15,7 @@ const db = admin.firestore();
 
 exports.createItem = async (req, res) => {
     try {
-        const { name, price, description, category,subcategory, isCustomizable, stock,isStock, vedioLink } = req.body;
+        const { name, price, description, category,subcategory, isCustomizable, stock,isStock, vedioLink,colorPattern } = req.body;
         let imageUrl = req.body.imageUrls || [];
         console.log("Received image URLs:", imageUrl);  // Debugging
 
@@ -30,7 +30,8 @@ exports.createItem = async (req, res) => {
             isCustomizable,
             stock:Number(stock),
             isStock,
-            vedioLink
+            vedioLink,
+            colorPattern
 
         };
         // Create item using the ItemModel (handling both file and other properties)
@@ -125,7 +126,7 @@ exports.getById = async (req, res) => {
 
 exports.updateItem = async (req, res) => {
     const { id } = req.params;
-    const { name, price, description, category,subcategory, isCustomizable, stock, isStock, vedioLink } = req.body;
+    const { name, price, description, category,subcategory, isCustomizable, stock, isStock, vedioLink,colorPattern } = req.body;
     let imageUrls = req.body.imageUrls || []; // Use consistent variable name
 
     try {
@@ -175,7 +176,8 @@ exports.updateItem = async (req, res) => {
             isCustomizable,
             stock:Number(stock),
             isStock,
-            vedioLink
+            vedioLink,
+            colorPattern
         };
 
         console.log("itemData to update:", itemData);
