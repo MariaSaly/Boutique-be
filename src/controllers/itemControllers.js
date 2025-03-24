@@ -15,9 +15,11 @@ const db = admin.firestore();
 
 exports.createItem = async (req, res) => {
     try {
-        const { name, price, description, category,subcategory, isCustomizable, stock,isStock, vedioLink,colorPattern } = req.body;
+        const { name, price, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, colorPattern, isSleeve, sizes } = req.body;
         let imageUrl = req.body.imageUrls || [];
-        console.log("Received image URLs:", imageUrl);  // Debugging
+
+         // Parse sizes into an array
+  const sizesArray = sizes.split(',').map(size => size.trim());
 
 
         const itemData = {
@@ -28,20 +30,20 @@ exports.createItem = async (req, res) => {
             category,
             subcategory,
             isCustomizable,
-            stock:Number(stock),
+            stock: Number(stock),
             isStock,
-            vedioLink,
-            colorPattern
-
+            vedioLink: vedioLink || null, // Make vedioLink optional
+            colorPattern,
+            isSleeve,
+            sizesArray
         };
-        // Create item using the ItemModel (handling both file and other properties)
+
         const newItem = await item.create(itemData);
         res.status(201).send(newItem);
+    } catch (err) {
+        res.status(500).send({ error: `Failed to create item: ${err}` });
     }
-    catch (err) {
-        res.status(500).send({ error: `Failed to create item:${err}` });
-    }
-}
+};
 // get all items 
 exports.searchItems = async (req, res) => {
     try {
@@ -126,14 +128,10 @@ exports.getById = async (req, res) => {
 
 exports.updateItem = async (req, res) => {
     const { id } = req.params;
-    const { name, price, description, category,subcategory, isCustomizable, stock, isStock, vedioLink,colorPattern } = req.body;
-    let imageUrls = req.body.imageUrls || []; // Use consistent variable name
-
+    const { name, price, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, isSleeve, colorPattern, sizes } = req.body;
+    let imageUrls = req.body.imageUrls || [];
+    const sizesArray = sizes.split(',').map(size => size.trim());
     try {
-        console.log("id:", id);
-        console.log("Raw req.body:", req.body);
-
-        // Fetch the existing item from Firestore
         const itemRef = admin.firestore().collection('items').doc(id);
         const itemDoc = await itemRef.get();
 
@@ -142,16 +140,14 @@ exports.updateItem = async (req, res) => {
         }
 
         const existingItem = itemDoc.data();
-        let updatedImageUrls = existingItem.imageUrl || []; // Ensure updatedImageUrls is always an array
+        let updatedImageUrls = existingItem.imageUrl || [];
 
-        // Handle new image upload
         if (imageUrls && imageUrls.length > 0) {
-            // Delete the old files from Firebase Storage (if they exist)
             if (existingItem.imageUrl && existingItem.imageUrl.length > 0) {
                 await Promise.all(
                     existingItem.imageUrl.map(async (url) => {
                         try {
-                            const filePath = decodeURIComponent(url.split('/o/')[1].split('?')[0]); // Extract correct file path
+                            const filePath = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
                             await bucket.file(filePath).delete();
                             console.log(`Deleted old image: ${filePath}`);
                         } catch (error) {
@@ -160,12 +156,9 @@ exports.updateItem = async (req, res) => {
                     })
                 );
             }
-
-            // Update with new image URLs
-            updatedImageUrls = imageUrls;  
+            updatedImageUrls = imageUrls;
         }
 
-        // Prepare the updated data
         const itemData = {
             name,
             price,
@@ -174,17 +167,15 @@ exports.updateItem = async (req, res) => {
             category,
             subcategory,
             isCustomizable,
-            stock:Number(stock),
+            stock: Number(stock),
             isStock,
-            vedioLink,
-            colorPattern
+            vedioLink: vedioLink || null, // Make vedioLink optional
+            isSleeve,
+            colorPattern,
+            sizesArray
         };
 
-        console.log("itemData to update:", itemData);
-
-        // Update the item in Firestore
         await itemRef.update(itemData);
-
         res.status(200).send({ message: 'Item updated successfully' });
     } catch (error) {
         console.error("Error updating item:", error.message);

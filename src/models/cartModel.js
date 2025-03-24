@@ -51,7 +51,7 @@ const cart = {
     }
     ,
 
-    async deleteCartItems(userId, productId = null) {
+    async deleteCartItems(userId, productId = null, colorPattern = null) {
         try {
             // Validate userId
             if (!userId || typeof userId !== 'string' || userId.trim() === '') {
@@ -81,8 +81,12 @@ const cart = {
                 const cart = cartSnapshot.data();
                 const currentItems = Array.isArray(cart.items) ? cart.items : [];
     
-                // Find and remove the item with the specified productId
-                const itemIndex = currentItems.findIndex(item => item.productId === productId);
+                // Find and remove the item with the specified productId and optional colorPattern
+                const itemIndex = currentItems.findIndex(item => 
+                    item.productId === productId && 
+                    (colorPattern === null || item.colorPattern === colorPattern) // Optional colorPattern
+                );
+    
                 if (itemIndex === -1) {
                     console.log(`Item with productId ${productId} not found in the cart.`);
                     return;
@@ -124,13 +128,13 @@ const cart = {
             throw new Error('Failed to update cart');
         }
     },
-    async incrementItemQuantity(cartId, productId, size) {
+    async incrementItemQuantity(cartId, productId, size = 'M', isSleeve = false, colorPattern = '-') {
         try {
-            if (!cartId || !productId || !size) {
+            if (!cartId || !productId) {
                 throw new Error("Invalid input data");
             }
     
-            console.log(`Incrementing quantity for productId: ${productId}, size: ${size} in cart: ${cartId}`);
+            console.log(`Incrementing quantity for productId: ${productId}, size: ${size}, isSleeve: ${isSleeve}, colorPattern: ${colorPattern} in cart: ${cartId}`);
     
             // Fetch the current cart
             const cartRef = db.collection(CART_COLLECTION).doc(cartId);
@@ -145,7 +149,12 @@ const cart = {
     
             // Check if the item exists in the cart
             cart.items = cart.items || [];
-            const itemIndex = cart.items.findIndex(item => item.productId === productId && item.size === size);
+            const itemIndex = cart.items.findIndex(item => 
+                item.productId === productId && 
+                item.size === size && 
+                item.isSleeve === isSleeve && 
+                item.colorPattern === colorPattern
+            );
     
             if (itemIndex !== -1) {
                 // Item found, increment quantity
@@ -166,7 +175,6 @@ const cart = {
             throw new Error('Failed to increment item quantity');
         }
     }
-    
     ,
     async createCart(userId, newCartItems) {
         try {
@@ -187,18 +195,18 @@ const cart = {
                 existingItems = cartData.items || [];
             }
     
-            // Merge existing items with newCartItems based on productId and size
+            // Merge existing items with newCartItems based on productId, size, and isSleeve
             for (const newItem of newCartItems) {
                 const existingItem = existingItems.find(item => 
-                    item.productId === newItem.productId && item.size === newItem.size
+                    item.productId === newItem.productId && item.size === newItem.size && item.isSleeve === (newItem.isSleeve || false)
                 );
     
                 if (existingItem) {
-                    // Update quantity of the existing item with the same size
+                    // Update quantity of the existing item with the same size and isSleeve
                     existingItem.quantity += newItem.quantity;
                 } else {
-                    // Add the new item with size
-                    existingItems.push(newItem);
+                    // Add the new item with size and isSleeve
+                    existingItems.push({ ...newItem, isSleeve: newItem.isSleeve || false });
                 }
             }
     

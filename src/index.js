@@ -43,16 +43,16 @@ app.use('/api/cart', CartRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/users', userRoutes);
 
-// Start server locally (Only for local dev)
-// if (process.env.NODE_ENV !== 'production') {
-//     const PORT = process.env.PORT || 5000;
-//     app.listen(PORT, () => {
-//         console.log(`Server running locally on port ${PORT}`);
-//     });
-// }
+//Start server locally (Only for local dev)
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`Server running locally on port ${PORT}`);
+    });
+}
 
 // ✅ Set Global Memory & Timeout
-setGlobalOptions({ memory: "2GB", timeoutSeconds: 300 });
+//setGlobalOptions({ memory: "2GB", timeoutSeconds: 300 });
 
 // ✅ Export the Cloud Function using Firebase v2
-exports.api = onRequest(app);
+//exports.api = onRequest(app);

@@ -38,6 +38,8 @@ exports.getCart = async (req, res) => {
                 const updatedItems = updatedCarts.flatMap(cart => cart.items.map(item => ({
                     ...item,
                     cartId: cart.id,
+                    size: cart.size,
+                    colorPattern: item.colorPattern
                 })));
 
                 console.log("Updated items after merging:", updatedItems);
@@ -51,6 +53,8 @@ exports.getCart = async (req, res) => {
                             productId: item.productId,
                             quantity: item.quantity,
                             cartId: item.cartId,
+                            size: item.size,
+                            colorPattern: item.colorPattern
                         };
                     })
                 );
@@ -67,6 +71,8 @@ exports.getCart = async (req, res) => {
         const allItems = carts.flatMap(cart => cart.items.map(item => ({
             ...item,
             cartId: cart.id,
+            size: item.size,
+            colorPattern: item.colorPattern
         })));
 
         console.log("All items from user carts:", allItems);
@@ -79,6 +85,8 @@ exports.getCart = async (req, res) => {
                     productId: item.productId,
                     quantity: item.quantity,
                     cartId: item.cartId,
+                    size: item.size,
+                    colorPattern: item.colorPattern
                 };
             })
         );
@@ -125,7 +133,7 @@ async function mergeGuestCartToUserCart(guestId, userId) {
         const mergedItems = [...userCart.items]; // Start with user cart items
         guestCart.items.forEach(guestItem => {
             const existingItemIndex = mergedItems.findIndex(
-                userItem => userItem.productId === guestItem.productId
+                userItem => userItem.productId === guestItem.productId && userItem.size === guestItem.size && userItem.isSleeve === guestItem.isSleeve && userItem.colorPattern === guestItem.colorPattern
             );
 
             if (existingItemIndex > -1) {
@@ -155,11 +163,14 @@ async function mergeGuestCartToUserCart(guestId, userId) {
 
 exports.addToCart = async (req, res) => {
     try {
-        const { userId, productId, size } = req.body;
+        const { userId, productId, size, isSleeve, colorPattern } = req.body;
         let { quantity } = req.body;
 
         // Set default quantity to 1 if it's missing or invalid
         quantity = typeof quantity === 'number' && quantity > 0 ? quantity : 1;
+        // Set default isSleeve to false if it's missing or invalid
+        const sleeveFlag = typeof isSleeve === 'boolean' ? isSleeve : false;
+
         // Validate input
         if (!userId || !productId || !size || typeof quantity !== 'number') {
             return res.status(400).json({ message: 'Invalid input data' });
@@ -186,21 +197,23 @@ exports.addToCart = async (req, res) => {
         // Ensure cart.items is an array
         cart.items = cart.items || [];
 
-        // Check if the item with the same productId and size already exists
+        // Check if the item with the same productId, size, and isSleeve already exists
         const existingItem = cart.items.find(
-            item => item.productId === productId && item.size === size
+            item => item.productId === productId && item.size === size && item.isSleeve === sleeveFlag && item.colorPattern === colorPattern
         );
         console.log("existingItem:", existingItem);
         console.log("productId:", productId);
         console.log("size:", size);
+        console.log("isSleeve:", sleeveFlag);
+        console.log("colorPattern:", colorPattern);
 
         if (existingItem) {
             // If the item exists, increment its quantity using incrementItemQuantity
-            await cartModel.incrementItemQuantity(cart.id, productId, size);
+            await cartModel.incrementItemQuantity(cart.id, productId, size, sleeveFlag);
             console.log("Quantity incremented using incrementItemQuantity function.");
         } else {
             // Otherwise, add the new item
-            cart.items.push({ productId, size, quantity });
+            cart.items.push({ productId, size, quantity, isSleeve: sleeveFlag, colorPattern });
             // Persist the updated cart back to Firestore
             await cartModel.updateCart(cart.id, cart.items);
             console.log("New item added and cart updated.");
@@ -220,7 +233,12 @@ exports.updateCartItems = async (req, res) => {
     try {
         const { userId, productId, quantity } = req.body;
 
-        // Validate input
+        // Optional fields with default values
+        const size = req.body.size || 'M'; // Default size if not provided
+        const isSleeve = req.body.isSleeve || false; // Default isSleeve if not provided
+        const colorPattern = req.body.colorPattern || '-'; // Default colorPattern if not provided
+
+        // Validate required input
         if (!userId || !productId || typeof quantity !== 'number') {
             return res.status(400).json({ message: 'Invalid input data' });
         }
@@ -242,14 +260,25 @@ exports.updateCartItems = async (req, res) => {
         console.log('Cart before update:', cart);
 
         // Check if the item already exists in the cart
-        const existingItem = cart.items.find(item => item.productId === productId);
+        const existingItem = cart.items.find(item => 
+            item.productId === productId && 
+            (item.size === size || !size) && // Match size if provided, otherwise ignore
+            (item.isSleeve === isSleeve || !isSleeve) && // Match isSleeve if provided, otherwise ignore
+            (item.colorPattern === colorPattern || !colorPattern) // Match colorPattern if provided, otherwise ignore
+        );
 
         if (existingItem) {
             // Update the item's quantity
             existingItem.quantity = quantity;
         } else {
-            // Add a new item to the cart
-            cart.items.push({ productId, quantity });
+            // Add a new item to the cart with optional fields
+            cart.items.push({ 
+                productId, 
+                quantity, 
+                size, 
+                isSleeve, 
+                colorPattern 
+            });
         }
 
         console.log('Cart after update:', cart);

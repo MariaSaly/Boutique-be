@@ -27,9 +27,9 @@ const path = require("path");
 class item{
 
 
-    static async create (itemData){
-        const {name,price,description ,imageUrl,category,subcategory,isCustomizable,stock,vedioLink,colorPattern} = itemData;
-        
+    static async create(itemData) {
+        const { name, price, description, imageUrl, category, subcategory, isCustomizable, stock, vedioLink, colorPattern, isSleeve, sizes } = itemData;
+    
         const newItem = {
             name,
             price,
@@ -37,20 +37,19 @@ class item{
             imageUrl,
             category,
             subcategory,
-            stock,            
+            stock,
             isCustomizable,
-            deletedAt:null,
-            vedioLink,
+            deletedAt: null,
+            vedioLink: vedioLink || null, // Make vedioLink optional
             colorPattern,
-           
-            createdAt:admin.firestore.FieldValue.serverTimestamp(),
+            isSleeve,
+            sizes,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
         };
-        
-        
-
-        
+    
         const docRef = await itemsCollections.add(newItem);
-        return { id :docRef.id,...newItem}
+       
+        return { id: docRef.id, ...newItem };
     }
 
     static async getAll(filter = {}) {
@@ -106,11 +105,9 @@ class item{
         };
       }
 
-    static async update(id,itemData){
-        const {name,price,description,imageUrl,category,
-            stock,            
-            isCustomizable,colorPattern} = itemData;
-            console.log("itemData:",itemData);
+      static async update(id, itemData) {
+        const { name, price, description, imageUrl, category, stock, isCustomizable, colorPattern, isSleeve, sizes, vedioLink } = itemData;
+    
         const itemRef = itemsCollections.doc(id);
         await itemRef.update({
             name,
@@ -119,10 +116,14 @@ class item{
             imageUrl,
             category,
             stock,
-            isCustomizable,colorPattern,
-            updatedAt:admin.firestore.FieldValue.serverTimestamp()
+            isCustomizable,
+            colorPattern,
+            isSleeve,
+            sizes,
+            vedioLink: vedioLink || null, // Make vedioLink optional
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
-        return { message: "Items updated sucessfully"};
+        return { message: "Items updated successfully" };
     }
 
     static async delete(id){
