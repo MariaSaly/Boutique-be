@@ -6,8 +6,8 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 const Razorpay = require('razorpay');
 const razorpay = new Razorpay({
-    key_id: "rzp_test_EoH3hlWAoDxXig",
-    key_secret: "HrDgcLoWcvfLLzdSwDT9J8Yj",
+    key_id: "rzp_live_DomR59f3x4UYgZ",
+    key_secret: "1ufuy19EWR3ilcCSK4yq41za",
 });
 
 
