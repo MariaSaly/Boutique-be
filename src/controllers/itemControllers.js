@@ -15,7 +15,7 @@ const db = admin.firestore();
 
 exports.createItem = async (req, res) => {
     try {
-        const { name, price, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, colorPattern, isSleeve, sizes } = req.body;
+        const { name, price, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, colorPattern, isSleeve, sizes ,isPattern,isColor} = req.body;
         let imageUrl = req.body.imageUrls || [];
         console.log("sizes:",sizes);
          // Parse sizes into an array
@@ -36,7 +36,9 @@ exports.createItem = async (req, res) => {
             vedioLink: vedioLink || null, // Make vedioLink optional
             colorPattern,
             isSleeve,
-            sizesArray
+            sizesArray,
+            isColor,
+            isPattern
         };
 
         const newItem = await item.create(itemData);
@@ -129,7 +131,7 @@ exports.getById = async (req, res) => {
 
 exports.updateItem = async (req, res) => {
     const { id } = req.params;
-    const { name, price, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, isSleeve, colorPattern, sizes } = req.body;
+    const { name, price, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, isSleeve, colorPattern, sizes ,isPattern,isColor} = req.body;
     let imageUrls = req.body.imageUrls || [];
     const sizesArray = sizes.split(',').map(size => size.trim());
     try {
@@ -173,7 +175,9 @@ exports.updateItem = async (req, res) => {
             vedioLink: vedioLink || null, // Make vedioLink optional
             isSleeve,
             colorPattern,
-            sizesArray
+            sizesArray,
+            isPattern,
+            isColor
         };
 
         await itemRef.update(itemData);
