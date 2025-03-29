@@ -28,7 +28,7 @@ class item{
 
 
     static async create(itemData) {
-        const { name, price, description, imageUrl, category, subcategory, isCustomizable, stock, vedioLink, colorPattern, isSleeve, sizes } = itemData;
+        const { name, price, description, imageUrl, category, subcategory, isCustomizable, stock, vedioLink, colorPattern, isSleeve, sizesArray } = itemData;
     
         const newItem = {
             name,
@@ -43,7 +43,7 @@ class item{
             vedioLink: vedioLink || null, // Make vedioLink optional
             colorPattern,
             isSleeve,
-            sizes,
+            sizesArray,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         };
     
@@ -106,7 +106,7 @@ class item{
       }
 
       static async update(id, itemData) {
-        const { name, price, description, imageUrl, category, stock, isCustomizable, colorPattern, isSleeve, sizes, vedioLink } = itemData;
+        const { name, price, description, imageUrl, category, stock, isCustomizable, colorPattern, isSleeve, sizesArray, vedioLink } = itemData;
     
         const itemRef = itemsCollections.doc(id);
         await itemRef.update({
@@ -119,7 +119,7 @@ class item{
             isCustomizable,
             colorPattern,
             isSleeve,
-            sizes,
+            sizesArray,
             vedioLink: vedioLink || null, // Make vedioLink optional
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });

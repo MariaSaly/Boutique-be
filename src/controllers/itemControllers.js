@@ -17,9 +17,10 @@ exports.createItem = async (req, res) => {
     try {
         const { name, price, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, colorPattern, isSleeve, sizes } = req.body;
         let imageUrl = req.body.imageUrls || [];
-
+        console.log("sizes:",sizes);
          // Parse sizes into an array
   const sizesArray = sizes.split(',').map(size => size.trim());
+  console.log("sizesArray:",sizesArray);
 
 
         const itemData = {
