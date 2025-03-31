@@ -163,8 +163,9 @@ async function mergeGuestCartToUserCart(guestId, userId) {
 
 exports.addToCart = async (req, res) => {
     try {
-        const { userId, productId, size, isSleeve, colorPattern } = req.body;
+        const { userId, productId } = req.body;
         let { quantity } = req.body;
+        let {size,isSleeve,colorPattern} = req.body
 
         // Set default quantity to 1 if it's missing or invalid
         quantity = typeof quantity === 'number' && quantity > 0 ? quantity : 1;
@@ -172,11 +173,16 @@ exports.addToCart = async (req, res) => {
         const sleeveFlag = typeof isSleeve === 'boolean' ? isSleeve : false;
 
         // Validate input
-        if (!userId || !productId || !size || typeof quantity !== 'number') {
+        if (!userId || !productId  || typeof quantity !== 'number') {
             return res.status(400).json({ message: 'Invalid input data' });
         }
 
         console.log(`Fetching cart for userId: ${userId}`);
+
+        quantity = typeof quantity === 'number' && quantity > 0 ? quantity : 1;
+        size = size || '-'; // Default size if not provided
+        isSleeve = typeof isSleeve === 'boolean' ? isSleeve : false;
+        colorPattern = colorPattern || '-'; // Default if not provided
 
         // Fetch user's cart
         const cartQuerySnapshot = await cartModel.getCartByUserId(userId);
@@ -234,14 +240,19 @@ exports.updateCartItems = async (req, res) => {
         const { userId, productId, quantity } = req.body;
 
         // Optional fields with default values
-        const size = req.body.size || 'M'; // Default size if not provided
-        const isSleeve = req.body.isSleeve || false; // Default isSleeve if not provided
-        const colorPattern = req.body.colorPattern || '-'; // Default colorPattern if not provided
+        let size = req.body.size || ''; // Default size if not provided
+        let isSleeve = req.body.isSleeve || false; // Default isSleeve if not provided
+        let colorPattern = req.body.colorPattern || '-'; // Default colorPattern if not provided
 
         // Validate required input
         if (!userId || !productId || typeof quantity !== 'number') {
             return res.status(400).json({ message: 'Invalid input data' });
         }
+
+           // Set defaults for optional fields
+           size = size || '';
+           isSleeve = isSleeve || false;
+           colorPattern = colorPattern || '-';
 
         // Fetch the cart for the user
         let cart = await cartModel.getCartByUserId(userId);
