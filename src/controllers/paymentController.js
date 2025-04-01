@@ -38,7 +38,7 @@ exports.verifyOrder = async (req, res) => {
         console.log("orderid:", order_id);
 
         const body = `${order_id}|${razorpay_payment_id}`;
-        const expectedSignature = crypto.createHmac("sha256", "HrDgcLoWcvfLLzdSwDT9J8Yj")
+        const expectedSignature = crypto.createHmac("sha256", "1ufuy19EWR3ilcCSK4yq41za")
             .update(body.toString())
             .digest("hex");
 
