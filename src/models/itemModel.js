@@ -28,11 +28,12 @@ class item{
 
 
     static async create(itemData) {
-        const { name, price, description, imageUrl, category, subcategory, isCustomizable, stock, vedioLink, colorPattern, isSleeve, sizesArray ,isColor,isPattern} = itemData;
+        const { name, price,offerprice, description, imageUrl, category, subcategory, isCustomizable, stock, vedioLink, colorPattern, isSleeve, sizesArray ,isColor,isPattern} = itemData;
     
         const newItem = {
             name,
             price,
+            offerprice,
             description,
             imageUrl,
             category,
@@ -108,13 +109,14 @@ class item{
       }
 
       static async update(id, itemData) {
-        const { name, price, description, imageUrl, category, stock, isCustomizable, colorPattern, isSleeve, sizesArray, vedioLink ,isColor,isPattern} = itemData;
+        const { name, price,offerprice, description, imageUrl, category, stock, isCustomizable, colorPattern, isSleeve, sizesArray, vedioLink ,isColor,isPattern} = itemData;
     
         const itemRef = itemsCollections.doc(id);
         await itemRef.update({
             name,
             description,
             price,
+            offerprice,
             imageUrl,
             category,
             stock,
