@@ -111,70 +111,88 @@ const cart = {
     ,
     async updateCart(userId, cartItems) {
         try {
-            // Validate userId and cartItems before proceeding
+            // Validate userId and cartItems
             if (!userId || typeof userId !== 'string' || userId.trim() === '') {
                 throw new Error("Invalid userId passed to updateCart");
             }
+            if (!Array.isArray(cartItems)) {
+                throw new Error("cartItems must be an array");
+            }
+    
             console.log('Updating cart for userId:', userId);
-            console.log('Cart Items:', cartItems);
-
-            // Ensure the cart document is updated with correct userId and items
-            const cartRef = db.collection(CART_COLLECTION).doc(userId);  // Use userId directly to reference the document
-            await cartRef.set({ userId, items: cartItems });
-
+            
+            // Remove duplicates before updating
+            const uniqueItems = [];
+            const seen = new Set();
+            
+            for (const item of cartItems) {
+                const key = `${item.productId}-${item.size}-${item.isSleeve}-${item.isStitches}-${item.colorPattern}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueItems.push(item);
+                }
+            }
+    
+            console.log('Processed Cart Items (after deduplication):', uniqueItems);
+    
+            const cartRef = db.collection(CART_COLLECTION).doc(userId);
+            
+            // Use update instead of set to preserve other fields
+            await cartRef.update({ 
+                items: uniqueItems,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp() 
+            });
+    
             console.log('Cart updated successfully');
         } catch (error) {
             console.error('Error updating cart:', error);
             throw new Error('Failed to update cart');
         }
     },
-    async incrementItemQuantity(cartId, productId, size = 'M', isSleeve = false, colorPattern = '-') {
-        try {
-            if (!cartId || !productId) {
-                throw new Error("Invalid input data");
-            }
-    
-            console.log(`Incrementing quantity for productId: ${productId}, size: ${size}, isSleeve: ${isSleeve}, colorPattern: ${colorPattern} in cart: ${cartId}`);
-    
-            // Fetch the current cart
-            const cartRef = db.collection(CART_COLLECTION).doc(cartId);
-            const cartSnapshot = await cartRef.get();
-    
-            if (!cartSnapshot.exists) {
-                throw new Error('Cart not found');
-            }
-    
-            const cart = cartSnapshot.data();
-            let itemFound = false;
-    
-            // Check if the item exists in the cart
-            cart.items = cart.items || [];
-            const itemIndex = cart.items.findIndex(item => 
-                item.productId === productId && 
-                item.size === size && 
-                item.isSleeve === isSleeve && 
-                item.colorPattern === colorPattern
-            );
-    
-            if (itemIndex !== -1) {
-                // Item found, increment quantity
-                cart.items[itemIndex].quantity += 1;
-                itemFound = true;
-            }
-    
-            if (!itemFound) {
-                throw new Error('Item not found in the cart');
-            }
-    
-            // Update the cart with the new quantity
-            await cartRef.update({ items: cart.items });
-    
-            console.log('Item quantity incremented successfully');
-        } catch (error) {
-            console.error('Error incrementing item quantity:', error);
-            throw new Error('Failed to increment item quantity');
+ // Update incrementItemQuantity to include isStitches
+async incrementItemQuantity(cartId, productId, size = 'M', isSleeve = false, isStitches = false, colorPattern = '-') {
+    try {
+        if (!cartId || !productId) {
+            throw new Error("Invalid input data");
         }
+
+        console.log(`Incrementing quantity for productId: ${productId}, size: ${size}, isSleeve: ${isSleeve}, isStitches: ${isStitches}, colorPattern: ${colorPattern} in cart: ${cartId}`);
+
+        const cartRef = db.collection(CART_COLLECTION).doc(cartId);
+        const cartSnapshot = await cartRef.get();
+
+        if (!cartSnapshot.exists) {
+            throw new Error('Cart not found');
+        }
+
+        const cart = cartSnapshot.data();
+        let itemFound = false;
+
+        cart.items = cart.items || [];
+        const itemIndex = cart.items.findIndex(item => 
+            item.productId === productId && 
+            item.size === size && 
+            item.isSleeve === isSleeve &&
+            item.isStitches === isStitches &&
+            item.colorPattern === colorPattern
+        );
+
+        if (itemIndex !== -1) {
+            cart.items[itemIndex].quantity += 1;
+            itemFound = true;
+        }
+
+        if (!itemFound) {
+            throw new Error('Item not found in the cart');
+        }
+
+        await cartRef.update({ items: cart.items });
+        console.log('Item quantity incremented successfully');
+    } catch (error) {
+        console.error('Error incrementing item quantity:', error);
+        throw new Error('Failed to increment item quantity');
     }
+}
     ,
     async createCart(userId, newCartItems) {
         try {

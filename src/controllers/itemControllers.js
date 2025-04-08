@@ -15,7 +15,7 @@ const db = admin.firestore();
 
 exports.createItem = async (req, res) => {
     try {
-        const { name, price,offerprice, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, colorPattern, isSleeve, sizes ,isPattern,isColor} = req.body;
+        const { name, price,offerprice, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, colorPattern, isSleeve,isStitches, sizes ,isPattern,isColor} = req.body;
         let imageUrl = req.body.imageUrls || [];
         console.log("sizes:",sizes);
          // Parse sizes into an array
@@ -37,6 +37,7 @@ exports.createItem = async (req, res) => {
             vedioLink: vedioLink || null, // Make vedioLink optional
             colorPattern,
             isSleeve,
+            isStitches,
             sizesArray,
             isColor,
             isPattern
@@ -132,7 +133,7 @@ exports.getById = async (req, res) => {
 
 exports.updateItem = async (req, res) => {
     const { id } = req.params;
-    const { name, price,offerprice, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, isSleeve, colorPattern, sizes ,isPattern,isColor} = req.body;
+    const { name, price,offerprice, description, category, subcategory, isCustomizable, stock, isStock, vedioLink, isSleeve,isStitches, colorPattern, sizes ,isPattern,isColor} = req.body;
     let imageUrls = req.body.imageUrls || [];
     const sizesArray = sizes.split(',').map(size => size.trim());
     try {
@@ -176,6 +177,7 @@ exports.updateItem = async (req, res) => {
             isStock,
             vedioLink: vedioLink || null, // Make vedioLink optional
             isSleeve,
+            isStitches,
             colorPattern,
             sizesArray,
             isPattern,
