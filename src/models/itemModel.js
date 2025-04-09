@@ -28,7 +28,7 @@ class item{
 
 
     static async create(itemData) {
-        const { name, price,offerprice, description, imageUrl, category, subcategory, isCustomizable, stock, vedioLink, colorPattern, isSleeve,isStitches, sizesArray ,isColor,isPattern} = itemData;
+        const { name, price,offerprice, description, imageUrl, category, subcategory, isCustomizable, stock, vedioLink, colorPattern, isSleeve,isStitched, sizesArray ,isColor,isPattern} = itemData;
     
         const newItem = {
             name,
@@ -44,7 +44,7 @@ class item{
             vedioLink: vedioLink || null, // Make vedioLink optional
             colorPattern:colorPattern || '',
             isSleeve ,
-            isStitches,
+            isStitched,
             sizesArray:sizesArray || [],
             isColor,
             isPattern,
@@ -110,7 +110,7 @@ class item{
       }
 
       static async update(id, itemData) {
-        const { name, price,offerprice, description, imageUrl, category, stock, isCustomizable, colorPattern, isSleeve,isStitches, sizesArray, vedioLink ,isColor,isPattern} = itemData;
+        const { name, price,offerprice, description, imageUrl, category, stock, isCustomizable, colorPattern, isSleeve,isStitched, sizesArray, vedioLink ,isColor,isPattern} = itemData;
     
         const itemRef = itemsCollections.doc(id);
         await itemRef.update({
@@ -124,7 +124,7 @@ class item{
             isCustomizable,
             colorPattern:colorPattern || '',
             isSleeve,
-            isStitches,
+            isStitched,
             sizesArray:sizesArray || [],
             isColor,
             isPattern,

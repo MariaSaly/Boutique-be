@@ -39,7 +39,8 @@ exports.getCart = async (req, res) => {
                     ...item,
                     cartId: cart.id,
                     size: cart.size,
-                    colorPattern: item.colorPattern
+                    colorPattern: item.colorPattern,
+                    isStitches: item.isStitches || false // Include isStitches with default false if not present
                 })));
 
                 console.log("Updated items after merging:", updatedItems);
@@ -54,7 +55,8 @@ exports.getCart = async (req, res) => {
                             quantity: item.quantity,
                             cartId: item.cartId,
                             size: item.size,
-                            colorPattern: item.colorPattern
+                            colorPattern: item.colorPattern,
+                            isStitches: item.isStitches || false // Include isStitches in response
                         };
                     })
                 );
@@ -72,7 +74,8 @@ exports.getCart = async (req, res) => {
             ...item,
             cartId: cart.id,
             size: item.size,
-            colorPattern: item.colorPattern
+            colorPattern: item.colorPattern,
+            isStitches: item.isStitches || false // Include isStitches with default false if not present
         })));
 
         console.log("All items from user carts:", allItems);
@@ -86,7 +89,8 @@ exports.getCart = async (req, res) => {
                     quantity: item.quantity,
                     cartId: item.cartId,
                     size: item.size,
-                    colorPattern: item.colorPattern
+                    colorPattern: item.colorPattern,
+                    isStitches: item.isStitches || false // Include isStitches in response
                 };
             })
         );
@@ -213,59 +217,59 @@ exports.addToCart = async (req, res) => {
 
 exports.updateCartItems = async (req, res) => {
     try {
-      const { userId, productId } = req.body;
-      const quantity = typeof req.body.quantity === 'number' ? req.body.quantity : 1;
-      const size = req.body.size || '-';
-      const isSleeve = String(req.body.isSleeve === true); // 'true' or 'false'
-      const isStitches = String(req.body.isStitches === true); // 'true' or 'false'
-      const colorPattern = req.body.colorPattern || '-';
-  
-      if (!userId || !productId) {
-        return res.status(400).json({ message: 'Invalid input data' });
-      }
-  
-      let cart = await cartModel.getCartByUserId(userId);
-      cart = cart && cart.length > 0
-        ? { userId, items: cart.flatMap(c => c.items) }
-        : { userId, items: [] };
-  
-      console.log("cartitemschecking:", cart.items);
-  
-      const existingItem = cart.items.find(item => {
-        console.log("comparing thecart:", item);
-        return (
-          item.productId === productId &&
-          (item.size || '-') === size &&
-          String(item.isSleeve) === isSleeve &&
-          String(item.isStitches) === isStitches &&
-          (item.colorPattern || '-') === colorPattern
-        );
-      });
-  
-      console.log("existingitem:", existingItem);
-  
-      if (existingItem) {
-        existingItem.quantity = quantity;
-      } else {
-        cart.items.push({
-          productId,
-          quantity,
-          size,
-          isSleeve,   // Already string
-          isStitches, // Already string
-          colorPattern
+        const { userId, productId } = req.body;
+        const quantity = typeof req.body.quantity === 'number' ? req.body.quantity : 1;
+        const size = req.body.size || '-';
+        const isSleeve = String(req.body.isSleeve === true); // 'true' or 'false'
+        const isStitches = String(req.body.isStitches === true); // 'true' or 'false'
+        const colorPattern = req.body.colorPattern || '-';
+
+        if (!userId || !productId) {
+            return res.status(400).json({ message: 'Invalid input data' });
+        }
+
+        let cart = await cartModel.getCartByUserId(userId);
+        cart = cart && cart.length > 0
+            ? { userId, items: cart.flatMap(c => c.items) }
+            : { userId, items: [] };
+
+        console.log("cartitemschecking:", cart.items);
+
+        const existingItem = cart.items.find(item => {
+            console.log("comparing thecart:", item);
+            return (
+                item.productId === productId &&
+                (item.size || '-') === size &&
+                String(item.isSleeve) === isSleeve &&
+                String(item.isStitches) === isStitches &&
+                (item.colorPattern || '-') === colorPattern
+            );
         });
-      }
-  
-      await cartModel.updateCart(userId, cart.items);
-      return res.status(200).json({ message: 'Cart updated successfully' });
-  
+
+        console.log("existingitem:", existingItem);
+
+        if (existingItem) {
+            existingItem.quantity = quantity;
+        } else {
+            cart.items.push({
+                productId,
+                quantity,
+                size,
+                isSleeve,   // Already string
+                isStitches, // Already string
+                colorPattern
+            });
+        }
+
+        await cartModel.updateCart(userId, cart.items);
+        return res.status(200).json({ message: 'Cart updated successfully' });
+
     } catch (err) {
-      console.error('Error in updateCartItems:', err);
-      return res.status(500).json({ message: 'Failed to update cart', error: err.message });
+        console.error('Error in updateCartItems:', err);
+        return res.status(500).json({ message: 'Failed to update cart', error: err.message });
     }
-  };
-  
+};
+
 
 
 
