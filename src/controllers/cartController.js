@@ -220,10 +220,10 @@ exports.updateCartItems = async (req, res) => {
         const { userId, productId } = req.body;
         const quantity = typeof req.body.quantity === 'number' ? req.body.quantity : 1;
         const size = req.body.size || '-';
-        const isSleeve = String(req.body.isSleeve === true); // 'true' or 'false'
-        const isStitches = String(req.body.isStitches === true); // 'true' or 'false'
+        const isSleeve = String(req.body.isSleeve); // 'true' or 'false'
+        const isStitches = String(req.body.isStitches); // 'true' or 'false'
         const colorPattern = req.body.colorPattern || '-';
-
+      console.log("isstitches:",isStitches)
         if (!userId || !productId) {
             return res.status(400).json({ message: 'Invalid input data' });
         }
