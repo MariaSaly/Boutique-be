@@ -57,32 +57,32 @@ exports.verifyOrder = async (req, res) => {
             const cartItems = cartData.items || [];
 
             // Update stock for each item
-            const batch = db.batch();
-            for (let item of cartItems) {
-                const productRef = db.collection("items").doc(item.productId);
-                const productSnapshot = await productRef.get();
-                console.log("items:",item);
+            // const batch = db.batch();
+            // for (let item of cartItems) {
+            //     const productRef = db.collection("items").doc(item.productId);
+            //     const productSnapshot = await productRef.get();
+            //     console.log("items:",item);
                
 
-                if (!productSnapshot.exists) {
-                    console.warn(`Product not found: ${item.productId}`);
-                    continue; // Skip if product does not exist
-                }
+            //     if (!productSnapshot.exists) {
+            //         console.warn(`Product not found: ${item.productId}`);
+            //         continue; // Skip if product does not exist
+            //     }
 
-                const productData = productSnapshot.data();
-                console.log("items:",item);
-                console.log("productData:",productData);
-                const newStock = (productData.stock || 0) - item.quantity;
+            //     const productData = productSnapshot.data();
+            //     console.log("items:",item);
+            //     console.log("productData:",productData);
+            //     const newStock = (productData.stock || 0) - item.quantity;
 
-                if (newStock < 0) {
-                    return res.status(400).json({ message: `Stock insufficient for product ${item.productId}` });
-                }
+            //     if (newStock < 0) {
+            //         return res.status(400).json({ message: `Stock insufficient for product ${item.productId}` });
+            //     }
 
-                batch.update(productRef, { stock: newStock });
-            }
+            //     batch.update(productRef, { stock: newStock });
+            // }
 
             // Execute batch update
-            await batch.commit();
+           // await batch.commit();
 
             // Update order status
             await orderRef.update({
